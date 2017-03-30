@@ -11,6 +11,10 @@ environment:
   GOPATH: c:\gopath
   GOVERSION: 1.8
 
+install:
+  - go get github.com/mattn/go-isatty
+  - go get gopkg.in/yaml.v2
+
 test_script:
   - go test blunt.sh/wtfcmd/wtf
 build_script:
