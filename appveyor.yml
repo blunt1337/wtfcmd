@@ -1,0 +1,34 @@
+version: 1.0.{build}
+skip_non_tags: true
+
+platform:
+  - x64
+  - x32
+
+clone_folder: c:\gopath\src\blunt.sh\wtfcmd
+
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.8
+
+test_script:
+  - go test blunt.sh/wtfcmd/wtf
+build_script:
+  - cd %GOPATH%/src/blunt.sh/wtfcmd
+  - go run assetbuilder\build.go %GOPATH%\src\blunt.sh\wtfcmd\assets
+  - go install blunt.sh\wtfcmd\wtf
+  - cmd: "MOVE %GOPATH%\\bin\\wtf.exe %APPVEYOR_BUILD_FOLDER%\\wtf.win_%PLATFORM%.exe"
+
+artifacts:
+  - path: "wtf.win_$(PLATFORM).exe"
+    name: binary
+
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: 7NovC/NXBmGOd1Oq1xJ0w9G2lkyCFA8t4cDagWTBIBjIQelHW73mgbTjkNIqbpm0
+  artifact: binary
+  draft: false
+  prerelease: false
+  on:
+    appveyor_repo_tag: true

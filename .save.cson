@@ -1,0 +1,2 @@
+# Package save-autorun for atom
+"**/*.go": "gofmt -w -s ${path}"

@@ -1,0 +1,15 @@
+- name: [build, b]
+  cmd:
+    bash: |
+      go run assetbuilder/build.go $(pwd)/assets && \
+      go install blunt.sh/wtfcmd/wtf
+    powershell: go run assetbuilder/build.go %cd%/assets && go install blunt.sh/wtfcmd/wtf
+  desc: Build the command
+
+- name: [test, t]
+  cmd: go test blunt.sh/wtfcmd/wtf
+  desc: Start tests
+
+- name: [format, f]
+  cmd: gofmt -s -w wtf/*.go
+  desc: Format go code
