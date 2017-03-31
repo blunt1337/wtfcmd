@@ -3,7 +3,9 @@
     bash: |
       go run assetbuilder/build.go $(pwd)/assets && \
       go install blunt.sh/wtfcmd/wtf
-    powershell: go run assetbuilder/build.go %cd%/assets && go install blunt.sh/wtfcmd/wtf
+    powershell: |
+      go run assetbuilder/build.go assets
+      go install blunt.sh/wtfcmd/wtf
   desc: Build the command
 
 - name: [test, t]
