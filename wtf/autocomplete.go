@@ -3,7 +3,11 @@ package main
 import (
 	"blunt.sh/wtfcmd/assets"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -47,8 +51,16 @@ func (me *AutocompleteResult) checkAndAdd(word string) {
 
 // AutocompleteCall will parse arguments into cursor position, cmdline, words...
 func AutocompleteCall(groups []*Group, args []string) {
-	if len(args) == 1 && args[0] == "setup" {
-		setupAutocomplete()
+	if len(args) == 1 {
+		switch args[0] {
+		case "setup":
+			setupAutocomplete()
+		case "install":
+			installAutocomplete()
+		case "uninstall":
+			uninstallAutocomplete()
+		}
+		os.Exit(0)
 	}
 
 	if len(args) < 3 {
@@ -62,7 +74,7 @@ func AutocompleteCall(groups []*Group, args []string) {
 	}
 
 	res := autocomplete(groups, args[1], args[2:], cursorPosition)
-	res = []string{"super", "souper"}
+
 	// Print
 	fmt.Print(strings.Join(res, resultSeparator))
 	os.Exit(0)
@@ -180,10 +192,104 @@ func setupAutocomplete() {
 		cmd = assets.Get("autocomplete.sh")
 	case TermPowershell:
 		cmd = assets.Get("autocomplete.ps1")
+		cmd = strings.Replace(cmd, "\r", "", -1)
+		cmd = strings.Replace(cmd, "\n", "\r\n", -1)
 	default:
 		Panic("No autocomplete for this terminal")
 	}
 
+	// Command path/name
+	cmdpath, cmdname := getCmdNameAndPath()
+
+	// Replace variables
+	cmd = strings.Replace(cmd, "CMDPATH", cmdpath, -1)
+	cmd = strings.Replace(cmd, "CMDNAME", cmdname, -1)
+	cmd = strings.Replace(cmd, "SEPARATOR", strings.Replace(resultSeparator, "\n", "\\n", -1), -1)
+
+	fmt.Print(cmd)
+	os.Exit(0)
+}
+
+// installAutocomplete installs the command `wtf --autocomplete setup` at bash/powershell startup.
+func installAutocomplete() {
+	// Command name
+	_, cmdname := getCmdNameAndPath()
+
+	switch GetTerminal() {
+	case TermCmd:
+		Panic("There is no autocomplete inside cmd.exe")
+	case TermPowershell:
+		// Find $PROFILE
+		bytes, err := exec.Command("powershell.exe", "-command", "echo $PROFILE").Output()
+		if err != nil {
+			Panic("Your $PROFILE variable was not found :o", err)
+		}
+		profile := strings.TrimSpace(string(bytes))
+
+		// Prompt
+		if !AskYN("It will add a script into $PROFILE and enable execution of powershell scripts.\n    Continue?", true) {
+			Panic("Then we can't install the autocomplete.")
+		}
+
+		// Enable execution of scripts
+		exec.Command("powershell.exe", "-command", "Set-ExecutionPolicy -Scope CurrentUser -Force RemoteSigned").Run()
+
+		// Content to add to $profile
+		script := "# " + cmdname + " autocomplete\n" +
+			cmdname + " --autocomplete setup > $env:temp\\" + cmdname + "_autocomplete.ps1\n" +
+			". $env:temp\\" + cmdname + "_autocomplete.ps1"
+
+		// Open $profile
+		data, err := ioutil.ReadFile(profile)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// Create sub folders
+				os.MkdirAll(filepath.Dir(profile), 0777)
+
+				// Create the file
+				err = ioutil.WriteFile(profile, []byte(script), 0777)
+				if err != nil {
+					Panic("Cannot write the $PROFILE script", err)
+				}
+			} else {
+				Panic(err)
+			}
+		} else {
+			content := string(data)
+
+			// Remove old code
+			content = regexp.MustCompile("\\n*(#\\s*"+cmdname+"\\s+autocomplete)*\\n*("+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(.\\s+.*"+cmdname+"_autocomplete.ps1)*").ReplaceAllString(content, "")
+
+			// Add our script
+			content += "\n" + script
+
+			// Rewrite the file
+			err = ioutil.WriteFile(profile, []byte(content), 0777)
+			if err != nil {
+				Panic("Cannot rewrite the $PROFILE script", err)
+			}
+		}
+		Made(cmdname + " autocomplete installed :)")
+	case TermBash:
+		//TODO: Open ~/.bash_profile
+		//TODO: Add/replace eval $(wtf --autocomplete setup)
+		//TODO: Save
+	}
+}
+
+// uninstallAutocomplete removes the command `wtf --autocomplete setup` from startup.
+func uninstallAutocomplete() {
+	switch GetTerminal() {
+	case TermCmd:
+		Panic("There is no autocomplete inside cmd.exe")
+	case TermPowershell:
+		//TODO:
+	case TermBash:
+	}
+}
+
+// getCmdNameAndPath returns the path and the name of the command. In case they renamed it.
+func getCmdNameAndPath() (string, string) {
 	// Command path/name
 	cmdname := os.Args[0]
 	cmdpath, err := os.Executable()
@@ -200,11 +306,5 @@ func setupAutocomplete() {
 		}
 	}
 
-	// Replace variables
-	cmd = strings.Replace(cmd, "CMDPATH", cmdpath, -1)
-	cmd = strings.Replace(cmd, "CMDNAME", cmdname, -1)
-	cmd = strings.Replace(cmd, "SEPARATOR", resultSeparator, -1)
-
-	fmt.Print(cmd)
-	os.Exit(0)
+	return cmdpath, cmdname
 }
