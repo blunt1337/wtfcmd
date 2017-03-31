@@ -279,12 +279,43 @@ func installAutocomplete() {
 
 // uninstallAutocomplete removes the command `wtf --autocomplete setup` from startup.
 func uninstallAutocomplete() {
+	// Command name
+	_, cmdname := getCmdNameAndPath()
+
 	switch GetTerminal() {
 	case TermCmd:
 		Panic("There is no autocomplete inside cmd.exe")
 	case TermPowershell:
-		//TODO:
+		// Find $PROFILE
+		bytes, err := exec.Command("powershell.exe", "-command", "echo $PROFILE").Output()
+		if err != nil {
+			Panic("Your $PROFILE variable was not found :o", err)
+		}
+		profile := strings.TrimSpace(string(bytes))
+
+		// Open $profile
+		data, err := ioutil.ReadFile(profile)
+		if err != nil {
+			if os.IsNotExist(err) {
+				Made("No autocomplete installed")
+			} else {
+				Panic(err)
+			}
+		} else {
+			content := string(data)
+
+			// Remove old code
+			content = regexp.MustCompile("\\n*(#\\s*"+cmdname+"\\s+autocomplete)*\\n*("+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(.\\s+.*"+cmdname+"_autocomplete.ps1)*").ReplaceAllString(content, "")
+
+			// Rewrite the file
+			err = ioutil.WriteFile(profile, []byte(content), 0777)
+			if err != nil {
+				Panic("Cannot rewrite the $PROFILE script", err)
+			}
+		}
+		Made(cmdname + " autocomplete uninstalled :)")
 	case TermBash:
+		//TODO:
 	}
 }
 
