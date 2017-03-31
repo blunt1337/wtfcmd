@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"os/user"
 )
 
 // resultSeparator is the separator to split results
@@ -269,12 +270,52 @@ func installAutocomplete() {
 				Panic("Cannot rewrite the $PROFILE script", err)
 			}
 		}
-		Made(cmdname + " autocomplete installed :)")
 	case TermBash:
-		//TODO: Open ~/.bash_profile
-		//TODO: Add/replace eval $(wtf --autocomplete setup)
-		//TODO: Save
+		// Find ~/.bash_profile
+		user, err := user.Current()
+		if err != nil {
+        	Panic(err)
+		}
+		profile := user.HomeDir + "/.bash_profile"
+		
+		// Prompt
+		if !AskYN("It will add a line into your .bash_profile.\n    Continue?", true) {
+			Panic("Then we can't install the autocomplete.")
+		}
+
+		// Content to add to .bash_profile
+		script := "# " + cmdname + " autocomplete\n" +
+			"eval $(" + cmdname + " --autocomplete setup)"
+		
+		// Open ~/.bash_profile
+		data, err := ioutil.ReadFile(profile)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// Create the file
+				err = ioutil.WriteFile(profile, []byte(script), 0644)
+				if err != nil {
+					Panic("Cannot write the .bash_profile script", err)
+				}
+			} else {
+				Panic(err)
+			}
+		} else {
+			content := string(data)
+
+			// Remove old code
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\(" + cmdname + "\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+
+			// Add our script
+			content += "\n" + script
+
+			// Rewrite the file
+			err = ioutil.WriteFile(profile, []byte(content), 0644)
+			if err != nil {
+				Panic("Cannot rewrite the .bash_profile script", err)
+			}
+		}
 	}
+	Made(cmdname + " autocomplete installed :)")
 }
 
 // uninstallAutocomplete removes the command `wtf --autocomplete setup` from startup.
@@ -298,6 +339,7 @@ func uninstallAutocomplete() {
 		if err != nil {
 			if os.IsNotExist(err) {
 				Made("No autocomplete installed")
+				return
 			} else {
 				Panic(err)
 			}
@@ -313,10 +355,37 @@ func uninstallAutocomplete() {
 				Panic("Cannot rewrite the $PROFILE script", err)
 			}
 		}
-		Made(cmdname + " autocomplete uninstalled :)")
 	case TermBash:
-		//TODO:
+		// Find ~/.bash_profile
+		user, err := user.Current()
+		if err != nil {
+        	Panic(err)
+		}
+		profile := user.HomeDir + "/.bash_profile"
+		
+		// Open ~/.bash_profile
+		data, err := ioutil.ReadFile(profile)
+		if err != nil {
+			if os.IsNotExist(err) {
+				Made("No autocomplete installed")
+				return
+			} else {
+				Panic(err)
+			}
+		} else {
+			content := string(data)
+
+			// Remove old code
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\(" + cmdname + "\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+
+			// Rewrite the file
+			err = ioutil.WriteFile(profile, []byte(content), 0644)
+			if err != nil {
+				Panic("Cannot rewrite the .bash_profile script", err)
+			}
+		}
 	}
+	Made(cmdname + " autocomplete uninstalled :)")
 }
 
 // getCmdNameAndPath returns the path and the name of the command. In case they renamed it.
