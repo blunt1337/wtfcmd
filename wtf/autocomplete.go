@@ -6,12 +6,12 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
-	"os/user"
 )
 
 // resultSeparator is the separator to split results
@@ -259,7 +259,7 @@ func installAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("\\n*(#\\s*"+cmdname+"\\s+autocomplete)*\\n*("+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(.\\s+.*"+cmdname+"_autocomplete.ps1)*").ReplaceAllString(content, "")
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete\\n*)*(\\n*"+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(\\n*.\\s+.*"+cmdname+"_autocomplete.ps1\\n*)*").ReplaceAllString(content, "")
 
 			// Add our script
 			content += "\n" + script
@@ -274,10 +274,10 @@ func installAutocomplete() {
 		// Find ~/.bash_profile
 		user, err := user.Current()
 		if err != nil {
-        	Panic(err)
+			Panic(err)
 		}
 		profile := user.HomeDir + "/.bash_profile"
-		
+
 		// Prompt
 		if !AskYN("It will add a line into your .bash_profile.\n    Continue?", true) {
 			Panic("Then we can't install the autocomplete.")
@@ -286,7 +286,7 @@ func installAutocomplete() {
 		// Content to add to .bash_profile
 		script := "# " + cmdname + " autocomplete\n" +
 			"eval $(" + cmdname + " --autocomplete setup)"
-		
+
 		// Open ~/.bash_profile
 		data, err := ioutil.ReadFile(profile)
 		if err != nil {
@@ -303,7 +303,7 @@ func installAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\(" + cmdname + "\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\("+cmdname+"\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
 
 			// Add our script
 			content += "\n" + script
@@ -347,7 +347,7 @@ func uninstallAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("\\n*(#\\s*"+cmdname+"\\s+autocomplete)*\\n*("+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(.\\s+.*"+cmdname+"_autocomplete.ps1)*").ReplaceAllString(content, "")
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete\\n*)*(\\n*"+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(\\n*.\\s+.*"+cmdname+"_autocomplete.ps1\\n*)*").ReplaceAllString(content, "")
 
 			// Rewrite the file
 			err = ioutil.WriteFile(profile, []byte(content), 0777)
@@ -359,10 +359,10 @@ func uninstallAutocomplete() {
 		// Find ~/.bash_profile
 		user, err := user.Current()
 		if err != nil {
-        	Panic(err)
+			Panic(err)
 		}
 		profile := user.HomeDir + "/.bash_profile"
-		
+
 		// Open ~/.bash_profile
 		data, err := ioutil.ReadFile(profile)
 		if err != nil {
@@ -376,7 +376,7 @@ func uninstallAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\(" + cmdname + "\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\("+cmdname+"\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
 
 			// Rewrite the file
 			err = ioutil.WriteFile(profile, []byte(content), 0644)
