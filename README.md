@@ -19,7 +19,7 @@ If you have `go` installed, just run `go install blunt.sh/wtfcmd/wtf`
   Also [binaries](https://github.com/blunt1337/wtfcmd/releases) are available. Download and put it somewhere in your $PATH.
   If `wtf` is already in use, you can rename it whatever you like :)
 
-TODO: autocomplete installation
+To install the autocomplete, run `wtf --autocomplete install`
 
 # Simple example
 
