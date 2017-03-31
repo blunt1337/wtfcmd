@@ -10,7 +10,7 @@ _CMDNAME_completion_loader() {
 	# Empty
 	if [ -z "$string" ]; then
 		COMPREPLY=()
-        return 0
+		return 0
 	fi
 	
 	# Split into COMPREPLY
