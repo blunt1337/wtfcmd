@@ -16,8 +16,8 @@ os:
 
 script:
   - cd $GOPATH/src/blunt.sh/wtfcmd
-  - go test blunt.sh/wtfcmd/wtf
   - go run assetbuilder/build.go $(pwd)/assets
+  - go test blunt.sh/wtfcmd/wtf
   - go install blunt.sh/wtfcmd/wtf
 
 before_deploy:

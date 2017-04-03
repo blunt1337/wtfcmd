@@ -16,6 +16,8 @@ install:
   - go get gopkg.in/yaml.v2
 
 test_script:
+  - cd %GOPATH%/src/blunt.sh/wtfcmd
+  - go run assetbuilder\build.go %GOPATH%\src\blunt.sh\wtfcmd\assets
   - go test blunt.sh/wtfcmd/wtf
 build_script:
   - cd %GOPATH%/src/blunt.sh/wtfcmd
