@@ -4,7 +4,7 @@
 
   e.g. If you run `wtf` in `/Users/blunt/projects`, it will load from `/Users/blunt/projects` and `/Users/blunt`, and `/Users` and `/`.
 
-- Loaded files are `.cmds.conf` and `.cmds.yaml`.
+- Loaded files are `.wtfcmd.conf` and `.wtfcmd.yaml`.
 - A configuration can override a command from a parent configuration if they share the same group and name.
 
 ### Format

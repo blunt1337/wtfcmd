@@ -29,7 +29,7 @@ Now, let's say we use docker. To run our docker machine, we use the command:
 Let's see how we would use it with `wtf` instead:
 `wtf docker start`
 
-And how you'd need to configure it in the .cmds.json file:
+And how you'd need to configure it in the .wtfcmd.json file:
 ```json
 [
 	{

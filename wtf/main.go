@@ -16,14 +16,14 @@ func findConfigFiles() []string {
 	}
 
 	for {
-		// Check if a .cmds.json exists
-		path := dir + "/.cmds.json"
+		// Check if a .wtfcmd.json exists
+		path := dir + "/.wtfcmd.json"
 		if _, err := os.Stat(path); err == nil {
 			res = append(res, path)
 		}
 
-		// Check if a .cmds.yaml exists
-		path = dir + "/.cmds.yaml"
+		// Check if a .wtfcmd.yaml exists
+		path = dir + "/.wtfcmd.yaml"
 		if _, err := os.Stat(path); err == nil {
 			res = append(res, path)
 		}
