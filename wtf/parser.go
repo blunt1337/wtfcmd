@@ -29,6 +29,7 @@ type ArgOrFlag struct {
 	Required bool
 	Default  interface{}
 	Test     string
+	IsArray  bool
 }
 
 // CommandDefinition holds a command for bash, cmd, powershell from the config.
@@ -277,9 +278,14 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 				case "desc":
 					res.Desc = strings.Join(value, "\n")
 				}
-			case "required":
+			case "required", "is_array":
 				if subvalue, ok := v.(bool); ok {
-					res.Required = subvalue
+					switch k {
+					case "required":
+						res.Required = subvalue
+					case "is_array":
+						res.IsArray = subvalue
+					}
 				} else {
 					return nil, fmt.Errorf(".%s : must be a boolean", k)
 				}
@@ -331,6 +337,11 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 		// No required on flags
 		if !isArg && res.Required {
 			return nil, errors.New(".required : flags cannot be required")
+		}
+
+		// No array for arguments
+		if isArg && res.IsArray {
+			return nil, errors.New(".is_array : args cannot be arrays")
 		}
 
 		return res, nil

@@ -23,7 +23,7 @@ func sampleConfig() []*Group {
 	return BuildHierarchy(cfgs)
 }
 
-func Example1() {
+func ExampleAutocomplete1() {
 	groups := sampleConfig()
 
 	res := autocomplete(groups, "act ", []string{"act"}, 4)

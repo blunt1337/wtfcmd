@@ -118,6 +118,11 @@ A flag is an object with the following properties
 > - The default value if the flag not mentioned.
 > - Can be anything except an object or array.
 
+##### is_array
+> **Optional, default false** the value is an array
+> So multiple --flag value1 --flag value2 make an array flag=[value1, value2].
+> The default value will make flag=[default value]
+
 ##### test
 > **Optional** test code/regex
 > The test will show an error message if the flag doesn't pass it.

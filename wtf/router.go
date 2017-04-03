@@ -142,6 +142,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			var value string
 			var hasValue string
 			var incI bool
+			var isArray bool
 			if index > 0 {
 				name = arg[1:index]
 				value = arg[index+1:]
@@ -160,8 +161,8 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			// Long name
 			if name[0] == '-' {
 				var resValue interface{}
-				name, resValue, incI = parseFlag(group, command, name[1:], value, hasValue)
-				res[name] = resValue
+				name, resValue, incI, isArray = parseFlag(group, command, name[1:], value, hasValue)
+				addParamValue(res, name, resValue, isArray)
 			} else {
 				// Aliases
 				var resName string
@@ -169,8 +170,8 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 
 				lg := len(name)
 				for j := 0; j < lg; j++ {
-					resName, resValue, incI = parseFlag(group, command, string(name[j]), value, hasValue)
-					res[resName] = resValue
+					resName, resValue, incI, isArray = parseFlag(group, command, string(name[j]), value, hasValue)
+					addParamValue(res, resName, resValue, isArray)
 				}
 			}
 
@@ -197,7 +198,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 				}
 			}
 
-			res[name] = value
+			addParamValue(res, name, value, argCfg.IsArray)
 			argIndex++
 			continue
 		}
@@ -215,9 +216,9 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			}
 			ShowCommandError(msg, group, command)
 		} else if arg.Default == nil {
-			res[arg.Name[0]] = ""
+			addParamValue(res, arg.Name[0], "", false)
 		} else {
-			res[arg.Name[0]] = arg.Default
+			addParamValue(res, arg.Name[0], arg.Default, arg.IsArray)
 		}
 	}
 
@@ -225,11 +226,11 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 	for _, flag := range command.Config.Flags {
 		if flag.Default != nil {
 			if _, ok := res[flag.Name[0]]; !ok {
-				res[flag.Name[0]] = flag.Default
+				addParamValue(res, flag.Name[0], flag.Default, flag.IsArray)
 			}
 		} else if flag.Test == "$bool" {
 			if _, ok := res[flag.Name[0]]; !ok {
-				res[flag.Name[0]] = false
+				addParamValue(res, flag.Name[0], false, flag.IsArray)
 			}
 		}
 	}
@@ -238,7 +239,8 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 }
 
 // parseFlag parses and checks a flag.
-func parseFlag(group *Group, command *Command, name string, value string, hasValue string) (string, interface{}, bool) {
+// Returns the flag name, flag value, true if used the next arguement, and true if the flag is an array
+func parseFlag(group *Group, command *Command, name string, value string, hasValue string) (string, interface{}, bool, bool) {
 	// Find the flag
 	for _, flag := range command.Config.Flags {
 		if inArray(name, flag.Name) {
@@ -267,13 +269,13 @@ func parseFlag(group *Group, command *Command, name string, value string, hasVal
 					ShowCommandError(fmt.Sprintf("flag %s %s", name, err.Error()), group, command)
 				}
 
-				return flag.Name[0], resValue, nextValueUsed
+				return flag.Name[0], resValue, nextValueUsed, flag.IsArray
 			}
-			return flag.Name[0], value, nextValueUsed
+			return flag.Name[0], value, nextValueUsed, flag.IsArray
 		}
 	}
 	ShowCommandError(fmt.Sprintf("flag %s not found", name), group, command)
-	return "", "", false
+	return "", "", false, false
 }
 
 // checkValue run the test string to see if value match.
@@ -351,4 +353,19 @@ func inArray(needle string, stack []string) bool {
 		}
 	}
 	return false
+}
+
+// addParamValue adds a value to the param list.
+func addParamValue(res map[string]interface{}, name string, value interface{}, isArray bool) {
+	if isArray {
+		if _, ok := res[name]; !ok {
+			res[name] = []interface{}{value}
+		} else {
+			if array, ok := res[name].([]interface{}); ok {
+				res[name] = append(array, value)
+			}
+		}
+	} else {
+		res[name] = value
+	}
 }

@@ -101,7 +101,6 @@ Check the [full configuration documentation](https://github.com/blunt1337/wtfcmd
 - [ ] Raw option, to forward all option/arguments not defined into a single string variable
 - [ ] Global configurations in a folder, defined by an env variable
 - [ ] Array arguments (last argument can be arg* or arg+, for an array)
-- [ ] Array flags (multiple --flag value --flag value)
 - [ ] Maybe, print the command documentation after a double tab?
 
 To suggest a feature, report a bug, or general discussion:
