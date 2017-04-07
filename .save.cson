@@ -1,2 +1,3 @@
 # Package save-autorun for atom
 "**/*.go": "gofmt -w -s ${path}"
+"assets/**/!(export.go)": "cd $GOPATH/src/blunt.sh/wtfcmd; go run assetbuilder/build.go assets"
