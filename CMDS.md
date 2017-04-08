@@ -7,6 +7,9 @@
 - Loaded files are `.wtfcmd.conf` and `.wtfcmd.yaml`.
 - A configuration can override a command from a parent configuration if they share the same group and name.
 
+- To test your commands, you can put as first argument `--debug` to print the command before running it.
+E.g. `wtf --debug commandname arg1 arg2`
+
 ### Format
 The file must contain an array of [command](#command) objects.
 TODO: summary
