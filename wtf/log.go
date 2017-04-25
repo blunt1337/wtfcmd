@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/mattn/go-isatty"
 	"os"
 	"regexp"
 	"strconv"
@@ -19,7 +18,7 @@ var noColor = false
 var loadingStep = 0
 
 func init() {
-	noColor = os.Getenv("TERM") == "dumb" || !isatty.IsTerminal(os.Stdout.Fd()) && GetTerminal() != TermCmd
+	noColor = os.Getenv("TERM") == "dumb" || GetTerminal() == TermCmd
 }
 
 // Error prints an error.

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/mattn/go-isatty"
 	"os"
 	"sort"
 	"strings"
@@ -20,7 +19,7 @@ var red = ""
 
 // Fill bold/reset/red if the terminal can handle colors.
 func init() {
-	if os.Getenv("TERM") != "dumb" && isatty.IsTerminal(os.Stdout.Fd()) && GetTerminal() != TermCmd {
+	if os.Getenv("TERM") != "dumb" && GetTerminal() != TermCmd {
 		bold = "\033[01m"
 		reset = "\033[00m"
 		red = "\033[91m"
