@@ -86,15 +86,6 @@ func AutocompleteCall(groups []*Group, args []string) {
 
 // autocomplete returns an array of words to aucomplete the search.
 func autocomplete(groups []*Group, cmdline string, words []string, cursorPosition int) []string {
-	// Remove empty words
-	var realwords []string
-	for _, word := range words {
-		if word != "" {
-			realwords = append(realwords, word)
-		}
-	}
-	words = realwords
-
 	// Find the word index and starting index of our word
 	wordPosition := 0
 	wordIndex := -1
@@ -129,7 +120,7 @@ func autocomplete(groups []*Group, cmdline string, words []string, cursorPositio
 	}
 
 	// Autocomplete command/group
-	if wordIndex == 1 {
+	if wordIndex == 1 || (wordIndex == 2 && word == "") {
 		return autocompleteCommandOrGroup(groups, start, end)
 	}
 
