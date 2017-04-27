@@ -14,6 +14,9 @@ import (
 	"strings"
 )
 
+// version is the version of autocomplete scripts
+var version = "1"
+
 // resultSeparator is the separator to split results
 var resultSeparator = "\n"
 
@@ -83,6 +86,15 @@ func AutocompleteCall(groups []*Group, args []string) {
 
 // autocomplete returns an array of words to aucomplete the search.
 func autocomplete(groups []*Group, cmdline string, words []string, cursorPosition int) []string {
+	// Remove empty words
+	var realwords []string
+	for _, word := range words {
+		if word != "" {
+			realwords = append(realwords, word)
+		}
+	}
+	words = realwords
+
 	// Find the word index and starting index of our word
 	wordPosition := 0
 	wordIndex := -1
@@ -186,15 +198,18 @@ func autocompleteFlags(flags []*ArgOrFlag, start string, end string) []string {
 // setupAutocomplete print the command to install the autocomplete.
 func setupAutocomplete() {
 	var cmd string
+	var separator string
 
 	// Bash
 	switch GetTerminal() {
 	case TermBash:
 		cmd = assets.Get("autocomplete.sh")
+		separator = resultSeparator
 	case TermPowershell:
 		cmd = assets.Get("autocomplete.ps1")
 		cmd = strings.Replace(cmd, "\r", "", -1)
 		cmd = strings.Replace(cmd, "\n", "\r\n", -1)
+		separator = strings.Replace(resultSeparator, "\n", "\\n", -1)
 	default:
 		Panic("No autocomplete for this terminal")
 	}
@@ -205,7 +220,7 @@ func setupAutocomplete() {
 	// Replace variables
 	cmd = strings.Replace(cmd, "CMDPATH", cmdpath, -1)
 	cmd = strings.Replace(cmd, "CMDNAME", cmdname, -1)
-	cmd = strings.Replace(cmd, "SEPARATOR", strings.Replace(resultSeparator, "\n", "\\n", -1), -1)
+	cmd = strings.Replace(cmd, "SEPARATOR", separator, -1)
 
 	fmt.Print(cmd)
 	os.Exit(0)
@@ -236,9 +251,15 @@ func installAutocomplete() {
 		exec.Command("powershell.exe", "-command", "Set-ExecutionPolicy -Scope CurrentUser -Force RemoteSigned").Run()
 
 		// Content to add to $profile
-		script := "# " + cmdname + " autocomplete\n" +
-			cmdname + " --autocomplete setup > $env:temp\\" + cmdname + "_autocomplete.ps1\n" +
-			". $env:temp\\" + cmdname + "_autocomplete.ps1"
+		script := strings.Replace(""+
+			"# CMDNAME autocomplete\r\n"+
+			"$CMDNAME_autcomplete_path = \"$env:temp\\CMDNAME_autocomplete_"+version+".ps1\"\r\n"+
+			"if (!(Test-Path $CMDNAME_autcomplete_path)) {\r\n"+
+			"    CMDNAME --autocomplete setup > $CMDNAME_autcomplete_path\r\n"+
+			"}\r\n"+
+			". $CMDNAME_autcomplete_path\r\n"+
+			"# CMDNAME autocomplete end\r\n",
+			"CMDNAME", cmdname, -1)
 
 		// Open $profile
 		data, err := ioutil.ReadFile(profile)
@@ -259,7 +280,11 @@ func installAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete\\n*)*(\\n*"+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(\\n*.\\s+.*"+cmdname+"_autocomplete.ps1\\n*)*").ReplaceAllString(content, "")
+			content = regexp.MustCompile(strings.Replace("(?s)(\\n|\\r)*"+ // All space before
+				"# CMDNAME autocomplete\\r?\\n"+ // Start comment
+				".*?"+ // Everything between
+				"# CMDNAME autocomplete end", // End comment
+				"CMDNAME", cmdname, -1)).ReplaceAllString(content, "")
 
 			// Add our script
 			content += "\n" + script
@@ -284,8 +309,15 @@ func installAutocomplete() {
 		}
 
 		// Content to add to .bash_profile
-		script := "# " + cmdname + " autocomplete\n" +
-			"eval $(" + cmdname + " --autocomplete setup)"
+		script := strings.Replace(""+
+			"# CMDNAME autocomplete\n"+
+			"CMDNAME_autcomplete_path=\"$TMPDIR/CMDNAME_autocomplete_"+version+".sh\"\n"+
+			"if [ ! -f \"$CMDNAME_autcomplete_path\" ]; then\n"+
+			"    CMDNAME --autocomplete setup > \"$CMDNAME_autcomplete_path\"\n"+
+			"fi\n"+
+			"source \"$CMDNAME_autcomplete_path\"\n"+
+			"# CMDNAME autocomplete end\n",
+			"CMDNAME", cmdname, -1)
 
 		// Open ~/.bash_profile
 		data, err := ioutil.ReadFile(profile)
@@ -303,7 +335,11 @@ func installAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\("+cmdname+"\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+			content = regexp.MustCompile(strings.Replace("(?s)(\\n|\\r)*"+ // All space before
+				"# CMDNAME autocomplete\\r?\\n"+ // Start comment
+				".*?"+ // Everything between
+				"# CMDNAME autocomplete end", // End comment
+				"CMDNAME", cmdname, -1)).ReplaceAllString(content, "")
 
 			// Add our script
 			content += "\n" + script
@@ -347,7 +383,11 @@ func uninstallAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete\\n*)*(\\n*"+cmdname+"\\s+--autocomplete\\s+setup.*(\\n|$))*(\\n*.\\s+.*"+cmdname+"_autocomplete.ps1\\n*)*").ReplaceAllString(content, "")
+			content = regexp.MustCompile(strings.Replace("(?s)(\\n|\\r)*"+ // All space before
+				"# CMDNAME autocomplete\\r?\\n"+ // Start comment
+				".*?"+ // Everything between
+				"# CMDNAME autocomplete end", // End comment
+				"CMDNAME", cmdname, -1)).ReplaceAllString(content, "")
 
 			// Rewrite the file
 			err = ioutil.WriteFile(profile, []byte(content), 0777)
@@ -376,7 +416,11 @@ func uninstallAutocomplete() {
 			content := string(data)
 
 			// Remove old code
-			content = regexp.MustCompile("(\\n*#\\s*"+cmdname+"\\s+autocomplete)*(\\n*eval\\s+\\$\\("+cmdname+"\\s+--autocomplete\\s+setup\\))*").ReplaceAllString(content, "")
+			content = regexp.MustCompile(strings.Replace("(?s)(\\n|\\r)*"+ // All space before
+				"# CMDNAME autocomplete\\r?\\n"+ // Start comment
+				".*?"+ // Everything between
+				"# CMDNAME autocomplete end", // End comment
+				"CMDNAME", cmdname, -1)).ReplaceAllString(content, "")
 
 			// Rewrite the file
 			err = ioutil.WriteFile(profile, []byte(content), 0644)

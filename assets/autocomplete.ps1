@@ -1,6 +1,3 @@
-# Should be used with:
-# $ExecutionContext.InvokeCommand.ExpandString(CMDNAME --autocomplete setup)
-
 # Autocomplete function
 $completion_CMDNAME = {
 	param($commandName, $commandAst, $cursorPosition)
