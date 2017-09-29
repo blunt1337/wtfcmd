@@ -54,8 +54,10 @@ func main() {
 
 		cfgs, err = ParseConfigs(reader, cfgs, file, file[len(file)-4:])
 		if err != nil {
+			reader.Close()
 			Panic("Error parsing", file, ":", err)
 		}
+		reader.Close()
 	}
 
 	// Remove overrided functions
