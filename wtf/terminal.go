@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 // TermType is the terminal currently runing this program.
@@ -38,6 +39,14 @@ func GetTerminal() TermType {
 			if err == nil {
 				if regexp.MustCompile("\\\\WindowsPowerShell\\\\v[^\\\\]+\\\\powershell.exe").Match(out) {
 					term = TermPowershell
+
+					// Enable colors
+					fd := os.Stdout.Fd()
+					var mode uint32
+					if err = syscall.GetConsoleMode(syscall.Handle(fd), &mode); err == nil {
+						mode |= 0x0004 // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+						syscall.NewLazyDLL("kernel32.dll").NewProc("SetConsoleMode").Call(fd, uintptr(mode), 0)
+					}
 				} else if regexp.MustCompile("cygwin\\\\bin\\\\zsh.exe").Match(out) {
 					term = TermBash
 				}
