@@ -32,13 +32,13 @@ Let's see how we would use it with `wtf` instead:
 And how you'd need to configure it in the .wtfcmd.json file:
 ```json
 [
-	{
-		"group": ["docker", "dkr"],
+    {
+        "group": ["docker", "dkr"],
         "name": ["start", "s"],
         "desc": [
-			"Start an http server on the port 8080 by default.",
-			"Files from the current directory are mapped to /app"
-		],
+            "Start an http server on the port 8080 by default.",
+            "Files from the current directory are mapped to /app"
+        ],
         "cmd": "docker run -it --rm -p {{.port}}:80 -v .:/app --name myproject myimage",
         "flags": [
             {
@@ -48,7 +48,7 @@ And how you'd need to configure it in the .wtfcmd.json file:
                 "default": "8080"
             }
         ]
-	}
+    }
 ]
 ```
 
@@ -57,9 +57,9 @@ And how you'd need to configure it in the .wtfcmd.json file:
 Base structure with your command:
 ```json
 [
-	{
-		"cmd": "docker run -it --rm -p 8080:80 -v .:/app --name myproject myimage",
-	}
+    {
+        "cmd": "docker run -it --rm -p 8080:80 -v .:/app --name myproject myimage",
+    }
 ]
 ```
 
@@ -73,20 +73,20 @@ So i add to my object:
 I want my team to know about this command, so i add:
 ```json
 "desc": [
-	"Start an http server on the port 8080 by default.",
-	"Files from the current directory are mapped to /app"
+    "Start an http server on the port 8080 by default.",
+    "Files from the current directory are mapped to /app"
 ],
 ```
 
 I want the port number to be a parameter:
 ```json
 "flags": [
-	{
-		"name": ["port", "p"],
-		"desc": "Port number",
-		"test": "$uint",
-		"default": "8080"
-	}
+    {
+        "name": ["port", "p"],
+        "desc": "Port number",
+        "test": "$uint",
+        "default": "8080"
+    }
 ]
 ```
 and change the 8080 of my command to {{.port}}:
