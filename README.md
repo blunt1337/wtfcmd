@@ -92,7 +92,7 @@ I want the port number to be a parameter:
 and change the 8080 of my command to {{.port}}:
 `"cmd": "docker run -it --rm -p {{.port}}:80 -v .:/app --name myproject myimage",`
 
-Check the [full configuration documentation](https://github.com/blunt1337/wtfcmd/CMDS.md) for more.
+Check the [full configuration documentation](CMDS.md) for more.
 
 # TODOs
 
