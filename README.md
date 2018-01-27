@@ -1,4 +1,4 @@
-# What's The Fu*king command!
+# What's The Fu\*king command!
 
 - You want to run a command and you don't remember it?
 - You have co-workers asking you for commands every time?
