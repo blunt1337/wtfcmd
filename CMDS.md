@@ -36,18 +36,17 @@ A command is an object with the following properties
 ##### cmd
 > **Required** command template
 > commands can go from a simple strings, to a complexe template.
-
 > - If the command is compatible with bash/powershell, you can just write a string or string[] as a command.
-> But for specific terminals, you can write an object:
-> ```json
-{
-	"bash": [
-		"echo this command will run in bash",
-		"echo multilines works too"
-	],
-	"powershell": "echo this command will run with powershell.exe"
-}
-```
+>   But for specific terminals, you can write an object:
+>       ```json
+    {
+    	"bash": [
+    		"echo this command will run in bash",
+    		"echo multilines works too"
+    	],
+    	"powershell": "echo this command will run with powershell.exe"
+    }
+    ```
 > - The command format is **go template** https://golang.org/pkg/text/template/.
 >   - go template can do so many things, like variables, loops, functions, etc.
 >     E.g. to print an argument, just write {{.argumentName}}, or to print a string safely (escaped): {{esc .argumentName}}
@@ -94,14 +93,14 @@ An argument is an object with the following properties
 > **Optional** test code/regex
 > The test will show an error message if the argument doesn't pass it.
 > The value is a string, it can be:
-> - a regex like "^[a-z0-9]+$", for case insensitive: "^(?i)[a-z0-9]+$",
-> - "$int" to check for integers
-> - "$uint" to check for positive integers
-> - "$bool" to check for booleans (It accepts 1, t, TRUE, true, True, 0, f, F, FALSE, false, False)
-> - "$float" or "$number" to check for floating numbers
-> - "$file" to check for an existing files
-> - "$dir" to check for an existing directory
-> - "$dir/file" to check for an existing file or directory
+> - a regex like `^[a-z0-9]+$`, for case insensitive: `^(?i)[a-z0-9]+$`,
+> - `$int` to check for integers
+> - `$uint` to check for positive integers
+> - `$bool` to check for booleans (It accepts 1, t, TRUE, true, True, 0, f, F, FALSE, false, False)
+> - `$float` or "$number" to check for floating numbers
+> - `$file` to check for an existing files
+> - `$dir` to check for an existing directory
+> - `$dir/file` to check for an existing file or directory
 
 ### Flags
 A flag is an object with the following properties
@@ -110,7 +109,7 @@ A flag is an object with the following properties
 > **Required** flag name
 > - Can be either a string, or an array ["fullname", "f"], where 'f' is the alias.
 > - Can be used with `--dir=value`, or `--dir value`, or `-d=value`, or `-d value` (if not a boolean for the last one).
-> - Only utf8 alphanumeric characters and `:._-` are allowed.
+> - Only UTF8 alphanumeric characters and `:._-` are allowed.
 
 ##### desc
 > **Optional, but recommanded** description or help message
@@ -130,11 +129,11 @@ A flag is an object with the following properties
 > **Optional** test code/regex
 > The test will show an error message if the flag doesn't pass it.
 > The value is a string, it can be:
-> - a regex like "^[a-z0-9]+$", for case insensitive: "^(?i)[a-z0-9]+$",
-> - "$int" to check for integers
-> - "$uint" to check for positive integers
-> - "$bool" to check for booleans (It accepts 1, t, TRUE, true, True, 0, f, F, FALSE, false, False)
-> - "$float" or "$number" to check for floating numbers
-> - "$file" to check for an existing files
-> - "$dir" to check for an existing directory
-> - "$dir/file" to check for an existing file or directory
+> - a regex like `^[a-z0-9]+$`, for case insensitive: `^(?i)[a-z0-9]+$`,
+> - `$int` to check for integers
+> - `$uint` to check for positive integers
+> - `$bool` to check for booleans (It accepts 1, t, TRUE, true, True, 0, f, F, FALSE, false, False)
+> - `$float` or "$number" to check for floating numbers
+> - `$file` to check for an existing files
+> - `$dir` to check for an existing directory
+> - `$dir/file` to check for an existing file or directory
