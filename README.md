@@ -97,8 +97,8 @@ Check the [full configuration documentation](CMDS.md) for more.
 # TODOs
 
 - [ ] More tests
-- [ ] UI to build commands file
-- [ ] Raw option, to forward all option/arguments not defined into a single string variable
+- [ ] UI to build command files
+- [ ] Raw option, to forward all options/arguments not defined into a single string variable
 - [ ] Global configurations in a folder, defined by an env variable
 - [ ] Array arguments (last argument can be arg* or arg+, for an array)
 - [ ] Maybe, print the command documentation after a double tab?

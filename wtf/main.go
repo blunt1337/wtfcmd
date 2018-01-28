@@ -3,9 +3,10 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-// findConfigFiles finds all .cmd.json from current directory and all parents.
+// findConfigFiles finds all .wtfcmd.[ext] from current directory and all parents.
 func findConfigFiles() []string {
 	res := make([]string, 0)
 
@@ -24,6 +25,12 @@ func findConfigFiles() []string {
 
 		// Check if a .wtfcmd.yaml exists
 		path = dir + "/.wtfcmd.yaml"
+		if _, err := os.Stat(path); err == nil {
+			res = append(res, path)
+		}
+
+		// Check if a .wtfcmd.yml exists
+		path = dir + "/.wtfcmd.yml"
 		if _, err := os.Stat(path); err == nil {
 			res = append(res, path)
 		}
@@ -52,7 +59,7 @@ func main() {
 			Warn("can't open", file, ":", err)
 		}
 
-		cfgs, err = ParseConfigs(reader, cfgs, file, file[len(file)-4:])
+		cfgs, err = ParseConfigs(reader, cfgs, file, file[strings.LastIndex(file, ".")+1:])
 		if err != nil {
 			reader.Close()
 			Panic("Error parsing", file, ":", err)
