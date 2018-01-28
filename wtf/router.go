@@ -9,27 +9,27 @@ import (
 	"strings"
 )
 
-// Route show help message, or find the Config by the os.Args to execute, and executes it.
+// Route shows a help message, or find the command by the os.Args to execute, and executes it.
 func Route(groups []*Group) {
 	args := os.Args
 
 	// No args
 	if len(args) == 1 {
-		ShowHelp(groups)
-		return
+		ShowCommandError("no command given", nil, nil, groups)
 	}
 
-	// Show help
+	// Special first flags
 	showHelp := false
 	debug := false
 	switch os.Args[1] {
-	case "help", "--help", "-h":
+	case "help", "--help":
+		// Show help
 		args = args[2:]
 		showHelp = true
 
 		// Global help
 		if len(args) == 0 {
-			ShowHelp(groups)
+			ShowHelp(groups, os.Stdout)
 			return
 		}
 	case "--debug":
@@ -45,11 +45,19 @@ func Route(groups []*Group) {
 
 	group, command := findGroupAndCommand(groups, args)
 	if group == nil {
-		ShowCommandError("command not found", nil, nil)
+		if showHelp {
+			fmt.Fprintf(os.Stderr, "%s: error: command not found.\n\n", os.Args[0])
+			ShowHelp(groups, os.Stdout)
+			return
+		}
+		ShowCommandError("command not found", nil, nil, groups)
 	} else {
 		if command == nil {
-			ShowHelp([]*Group{group})
-			return
+			if showHelp {
+				ShowHelp([]*Group{group}, os.Stdout)
+				return
+			}
+			ShowCommandError("command not found", group, nil, nil)
 		}
 
 		// Execute or show help
@@ -194,7 +202,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 				var err error
 				value, err = checkValue(arg, argCfg.Test)
 				if err != nil {
-					ShowCommandError(fmt.Sprintf("argument %s: %s", name, err.Error()), group, command)
+					ShowCommandError(fmt.Sprintf("argument %s: %s", name, err.Error()), group, command, nil)
 				}
 			}
 
@@ -202,7 +210,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			argIndex++
 			continue
 		}
-		ShowCommandError("too many arguments", group, command)
+		ShowCommandError("too many arguments", group, command, nil)
 	}
 
 	// Defaults & required
@@ -214,7 +222,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			if len(arg.Desc) > 0 {
 				msg += ".\n" + arg.Desc
 			}
-			ShowCommandError(msg, group, command)
+			ShowCommandError(msg, group, command, nil)
 		} else if arg.Default == nil {
 			addParamValue(res, arg.Name[0], "", false)
 		} else {
@@ -256,7 +264,7 @@ func parseFlag(group *Group, command *Command, name string, value string, hasVal
 				if hasValue == "after" {
 					nextValueUsed = true
 				} else if hasValue == "no" {
-					ShowCommandError(fmt.Sprintf("flag %s requires a value", name), group, command)
+					ShowCommandError(fmt.Sprintf("flag %s requires a value", name), group, command, nil)
 				}
 			}
 
@@ -266,7 +274,7 @@ func parseFlag(group *Group, command *Command, name string, value string, hasVal
 				var resValue interface{}
 				resValue, err = checkValue(value, flag.Test)
 				if err != nil {
-					ShowCommandError(fmt.Sprintf("flag %s %s", name, err.Error()), group, command)
+					ShowCommandError(fmt.Sprintf("flag %s %s", name, err.Error()), group, command, nil)
 				}
 
 				return flag.Name[0], resValue, nextValueUsed, flag.IsArray
@@ -274,7 +282,7 @@ func parseFlag(group *Group, command *Command, name string, value string, hasVal
 			return flag.Name[0], value, nextValueUsed, flag.IsArray
 		}
 	}
-	ShowCommandError(fmt.Sprintf("flag %s not found", name), group, command)
+	ShowCommandError(fmt.Sprintf("flag %s not found", name), group, command, nil)
 	return "", "", false, false
 }
 

@@ -55,7 +55,7 @@ func (me SortByName) Less(i int, j int) bool {
 }
 
 // ShowHelp shows a help page with a list of all commands.
-func ShowHelp(groups []*Group) {
+func ShowHelp(groups []*Group, std *os.File) {
 	tplTxt := "{{$B := .Bold}}{{$R := .Reset}}" +
 		"\n" +
 		"{{$B}}AVAILABLE COMMANDS{{$R}}\n" +
@@ -104,7 +104,7 @@ func ShowHelp(groups []*Group) {
 	if err != nil {
 		Panic(err)
 	}
-	err = tmpl.Execute(os.Stdout, GroupWrapper{
+	err = tmpl.Execute(std, GroupWrapper{
 		Groups: groupByName,
 		Bold:   bold,
 		Reset:  reset,
@@ -186,34 +186,44 @@ func ShowHelpCommand(group *Group, command *Command) {
 }
 
 // ShowCommandError prints an error for a command.
-func ShowCommandError(msg string, group *Group, command *Command) {
+func ShowCommandError(msg string, group *Group, command *Command, groups []*Group) {
 	name := os.Args[0]
 
 	// Error
-	fmt.Printf("%s: error: %s.\n\n", name, msg)
+	fmt.Fprintf(os.Stderr, "%s: error: %s.\n\n", name, msg)
 
 	// Usage
-	if group != nil && command != nil {
-		tmpl, err := template.New("usage").Parse("Usage: " + getUsageTemplate() + "\n\n")
-		if err != nil {
-			Panic(err)
+	if group != nil {
+		if command != nil {
+			// Usage of group command
+			tplTxt := "Usage: " + getUsageTemplate() + "\n" +
+				"{{if .Command.Config.Desc}}" +
+				/*	*/ "Description: {{replace .Command.Config.Desc \"\\n\" \"\\n	\" -1}}\n" +
+				"{{end}}" +
+				"\n"
+
+			tmpl, err := template.New("usage").Funcs(template.FuncMap{
+				"replace": strings.Replace,
+			}).Parse(tplTxt)
+			if err != nil {
+				Panic(err)
+			}
+			err = tmpl.Execute(os.Stderr, CommandWrapper{
+				Command: command,
+				Group:   group,
+				Bold:    bold,
+				Reset:   reset,
+			})
+			if err != nil {
+				Panic(err)
+			}
+		} else {
+			// Show group doc
+			ShowHelp([]*Group{group}, os.Stderr)
 		}
-		err = tmpl.Execute(os.Stdout, CommandWrapper{
-			Command: command,
-			Group:   group,
-			Bold:    bold,
-			Reset:   reset,
-		})
-		if err != nil {
-			Panic(err)
-		}
+	} else {
+		// Show all
+		ShowHelp(groups, os.Stderr)
 	}
-
-	// Help
-	fmt.Printf("To see help text, you can run:\n")
-	fmt.Printf("%s help\n", name)
-	fmt.Printf("%s help <command>\n", name)
-	fmt.Printf("%s help <command> <subcommand>\n\n", name)
-
 	os.Exit(1)
 }
