@@ -17,7 +17,6 @@ script:
   - cd $GOPATH/src/blunt.sh/wtfcmd
   - go run assetbuilder/build.go $pwd/assets
   - go test blunt.sh/wtfcmd/wtf
-  - go install blunt.sh/wtfcmd/wtf
   - env GOOS=windows GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.exe blunt.sh/wtfcmd/wtf
   - env GOOS=darwin GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.linux blunt.sh/wtfcmd/wtf
   - env GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.osx blunt.sh/wtfcmd/wtf
