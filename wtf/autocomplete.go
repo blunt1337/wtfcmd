@@ -91,8 +91,14 @@ func autocomplete(groups []*Group, cmdline string, words []string, cursorPositio
 	wordIndex := -1
 	lastEnd := 0
 	for i, word := range words {
-		start := lastEnd + strings.Index(cmdline[lastEnd:], word)
-		end := start + len(word)
+		var start, end int
+		if word == "" {
+			start = lastEnd + 1
+			end = start
+		} else {
+			start = lastEnd + strings.Index(cmdline[lastEnd:], word)
+			end = start + len(word)
+		}
 
 		if start <= cursorPosition && cursorPosition <= end {
 			wordIndex = i
@@ -120,7 +126,7 @@ func autocomplete(groups []*Group, cmdline string, words []string, cursorPositio
 	}
 
 	// Autocomplete command/group
-	if wordIndex == 1 || (wordIndex == 2 && word == "") {
+	if wordIndex == 1 {
 		return autocompleteCommandOrGroup(groups, start, end)
 	}
 

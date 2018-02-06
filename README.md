@@ -102,6 +102,7 @@ Check the [full configuration documentation](CMDS.md) for more.
 - [ ] Global configurations in a folder, defined by an env variable
 - [ ] Array arguments (last argument can be arg* or arg+, for an array)
 - [ ] Maybe, print the command documentation after a double tab?
+- [ ] Autocomplete filenames if the argument/flag is a file/folder
 
 To suggest a feature, report a bug, or general discussion:
 http://github.com/blunt1337/wtfcmd/issues/

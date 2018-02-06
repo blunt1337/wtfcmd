@@ -59,12 +59,17 @@ func ExampleAutocomplete1() {
 	sort.Strings(res)
 	Made("autocomplete", res)
 
-	// Output: [+] autocomplete [build format test]
+	res = autocomplete(groups, "wtf build ", []string{"wtf", "build"}, 10)
+	sort.Strings(res)
+	Made("autocomplete", res)
+
+	// Output: [+] autocomplete [build format install test]
 	// [+] autocomplete [test]
 	// [+] autocomplete [form]
 	// [+] autocomplete [form]
 	// [+] autocomplete [format]
 	// [+] autocomplete []
-	// [+] autocomplete [build format test]
-	// [+] autocomplete [build format test]
+	// [+] autocomplete [build format install test]
+	// [+] autocomplete [build format install test]
+	// [+] autocomplete [for-os linux osx windows]
 }
