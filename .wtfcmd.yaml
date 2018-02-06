@@ -30,7 +30,7 @@
   cmd:
     bash: |
       go run assetbuilder/build.go $(pwd)/assets && \
-      env GOOS={{esc .os}} GOARCH={{esc .arch}} go build -ldflags="-s -w" -o wtf.exe blunt.sh/wtfcmd/wtf
+      env GOOS={{esc .os}} GOARCH={{esc .arch}} go build -ldflags="-s -w" -o wtf.{{if eq .os "windows"}}exe{{else}}{{.os}}{{end}} blunt.sh/wtfcmd/wtf
     powershell: |
       go run assetbuilder/build.go assets
       $env:GOOS = {{esc .os}}
