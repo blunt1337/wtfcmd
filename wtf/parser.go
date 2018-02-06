@@ -57,7 +57,7 @@ func ParseConfigs(input io.Reader, cfgs []*Config, file string, format string) (
 		if err := dec.Decode(&data); err != nil {
 			return nil, err
 		}
-	case "yaml":
+	case "yaml", "yml":
 		// Read the file
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(input)
