@@ -7,7 +7,7 @@
 - Loaded files are `.wtfcmd.json`, `.wtfcmd.yaml` or `.wtfcmd.yml`.
 - A configuration can override a command from a parent configuration if they share the same group and name.
 
-- To test your commands, you can put as first argument `--debug` to print the command before running it.
+- To test your commands, you can put as first argument `--debug` to print the command before running it.  
 E.g. `wtf --debug commandname arg1 arg2`
 
 ### Format
@@ -30,52 +30,53 @@ A command is an object with the following properties
 > - Only utf8 alphanumeric characters and `:._-` are allowed.
 
 ##### desc
-> **Optional, but recommanded** description or help message
+> **Optional, but recommanded** description or help message  
 > Description can be either a string, or an array for multiple lines.
 
 ##### cmd
-> **Required** command template
+> **Required** command template  
 > commands can go from a simple strings, to a complexe template.
-> - If the command is compatible with bash/powershell, you can just write a string or string[] as a command.
->   But for specific terminals, you can write an object:
->       ```json
-    {
-    	"bash": [
-    		"echo this command will run in bash",
-    		"echo multilines works too"
-    	],
-    	"powershell": "echo this command will run with powershell.exe"
-    }
+> - If the command is compatible with bash/powershell, you can just write a string or string[] as a command.  
+>   But for specific terminals, you can write an object:  
+>       ```js
+    {  
+    	"bash": [  
+    		"echo this command will run in bash",  
+    		"echo multilines works too"  
+    	],  
+    	"powershell": "echo this command will run with powershell.exe"  
+    }  
     ```
 > - The command format is **go template** https://golang.org/pkg/text/template/.
->   - go template can do so many things, like variables, loops, functions, etc.
+>   - go template can do so many things, like variables, loops, functions, etc.  
 >     E.g. to print an argument, just write {{.argumentName}}, or to print a string safely (escaped): {{esc .argumentName}}
->   - We made all strings functions available too https://golang.org/pkg/strings/.
+>   - We made all strings functions available too https://golang.org/pkg/strings/.  
 >     E.g. {{replace .myFlagName "old" "new" -1}}
->   - We also added some message functions:
->     {{made "some success message"}}
->     {{error "some error message"}}
->     {{warn "a warning here"}}
->     {{askYN "is it true?"}} && echo "You said yes" || echo "You said no"
+>   - We also added some message functions:  
+>     {{made "some success message"}}  
+>     {{error "some error message"}}  
+>     {{warn "a warning here"}}  
+>     {{askYN "is it true?"}} && echo "You said yes" || echo "You said no"  
 >     For all functions, more information at TODO:doc
 
 ##### cwd
-> **Optional, the current working dir of the command. Like commands, you can put one for "bash" and one for "powershell".
-> - If it starts with a dot, it will run in the config's directory + cwd
+> **Optional**, the current working dir of the command. Like commands, you can put one for "bash" and one for "powershell".
+> - If it starts with a dot, it will run in the config's directory + cwd.  
 >   E.g. In /my_projects/wtfcmd.json, there is cwd = ./public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /my_projects/public
-> - If it starts with '/' or 'x:', an absolute path
+> - If it starts with '/' or 'x:', an absolute path.  
 >   E.g. In /my_projects/wtfcmd.json, there is cwd = /public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /public
-> - If none of above, the directory where wtf was called + cwd
->   E.g. In /my_projects/wtfcmd.json, there is cwd = public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /my_projects/awesome/public
-> The default is the current directory where `wtf` is executed.
+> - If none of above, the directory where wtf was called + cwd.  
+>   E.g. In /my_projects/wtfcmd.json, there is cwd = public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /my_projects/awesome/public  
+>
+> The default is the current directory where `wtf` is executed.  
 > For more complex cases, you can use in the command a `cd {{configdir}}`.
 
 ##### args
-> **Optional** arguments
+> **Optional** arguments  
 > Arguments must contain an array of [Argument](#Argument) objects.
 
 ##### flags
-> **Optional** flags
+> **Optional** flags  
 > Flags must contain an array of [Flag](#Flag) objects.
 
 ### Argument
@@ -87,7 +88,7 @@ An argument is an object with the following properties
 > - Only utf8 alphanumeric characters and `:._-` are allowed.
 
 ##### desc
-> **Optional, but recommanded** description or help message
+> **Optional, but recommanded** description or help message  
 > Description can be either a string, or an array for multiple lines.
 
 ##### required
@@ -101,8 +102,8 @@ An argument is an object with the following properties
 > - Can be anything except an object or array.
 
 ##### test
-> **Optional** test code/regex
-> The test will show an error message if the argument doesn't pass it.
+> **Optional** test code/regex  
+> The test will show an error message if the argument doesn't pass it.  
 > The value is a string, it can be:
 > - a regex like `^[a-z0-9]+$`, for case insensitive: `^(?i)[a-z0-9]+$`,
 > - `$int` to check for integers
@@ -123,7 +124,7 @@ A flag is an object with the following properties
 > - Only UTF8 alphanumeric characters and `:._-` are allowed.
 
 ##### desc
-> **Optional, but recommanded** description or help message
+> **Optional, but recommanded** description or help message  
 > Description can be either a string, or an array for multiple lines.
 
 ##### default
@@ -132,13 +133,13 @@ A flag is an object with the following properties
 > - Can be anything except an object or array.
 
 ##### is_array
-> **Optional, default false** the value is an array
-> So multiple --flag value1 --flag value2 make an array flag=[value1, value2].
+> **Optional, default false** the value is an array  
+> So multiple --flag value1 --flag value2 make an array flag=[value1, value2].  
 > The default value will make flag=[default value]
 
 ##### test
-> **Optional** test code/regex
-> The test will show an error message if the flag doesn't pass it.
+> **Optional** test code/regex  
+> The test will show an error message if the flag doesn't pass it.  
 > The value is a string, it can be:
 > - a regex like `^[a-z0-9]+$`, for case insensitive: `^(?i)[a-z0-9]+$`,
 > - `$int` to check for integers
