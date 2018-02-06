@@ -59,6 +59,17 @@ A command is an object with the following properties
 >     {{askYN "is it true?"}} && echo "You said yes" || echo "You said no"
 >     For all functions, more information at TODO:doc
 
+##### cwd
+> **Optional, the current working dir of the command. Like commands, you can put one for "bash" and one for "powershell".
+> - If it starts with a dot, it will run in the config's directory + cwd
+>   E.g. In /my_projects/wtfcmd.json, there is cwd = ./public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /my_projects/public
+> - If it starts with '/' or 'x:', an absolute path
+>   E.g. In /my_projects/wtfcmd.json, there is cwd = /public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /public
+> - If none of above, the directory where wtf was called + cwd
+>   E.g. In /my_projects/wtfcmd.json, there is cwd = public; then running `wtf` in /my_projects/awesome/, will put the current working dir to /my_projects/awesome/public
+> The default is the current directory where `wtf` is executed.
+> For more complex cases, you can use in the command a `cd {{configdir}}`.
+
 ##### args
 > **Optional** arguments
 > Arguments must contain an array of [Argument](#Argument) objects.

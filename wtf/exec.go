@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -50,11 +51,7 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	process.Stdout = os.Stdout
 	process.Stderr = os.Stderr
 	process.Stdin = os.Stdin
-
-	// Working dir
-	if cwd, err := os.Getwd(); err == nil {
-		process.Dir = cwd
-	}
+	process.Dir = ResolveCwd(command.Config)
 
 	// Start
 	if err := process.Start(); err != nil {
@@ -73,6 +70,54 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 		}
 	}
 	os.Exit(0)
+}
+
+// ResolveCwd finds where the current working dir will be
+func ResolveCwd(cfg *Config) string {
+	var to_resolve string
+	if cfg.Cwd == nil {
+		to_resolve = ""
+	} else {
+		switch term {
+		case TermBash:
+			to_resolve = cfg.Cwd.Bash
+		case TermCmd, TermPowershell:
+			to_resolve = cfg.Cwd.Powershell
+		}
+	}
+	lg := len(to_resolve)
+
+	// Current working dir
+	var cwd string
+	var err error
+	if cwd, err = os.Getwd(); err != nil {
+		cwd = "/"
+	}
+
+	// Empty
+	if lg == 0 {
+		return cwd
+	}
+
+	// Starting with dot: config dir + to_resolve
+	if to_resolve[0] == '.' {
+		return path.Join(filepath.Dir(cfg.File), to_resolve)
+	}
+
+	// Starting with / or x:/ absolute path
+	switch term {
+	case TermBash:
+		if to_resolve[0] == '/' {
+			return to_resolve
+		}
+	case TermCmd, TermPowershell:
+		if lg >= 3 && to_resolve[1] == ':' && (to_resolve[1] == '/' || to_resolve[1] == '\\') {
+			return to_resolve
+		}
+	}
+
+	// Default: cwd + to_resolve
+	return path.Join(cwd, to_resolve)
 }
 
 // getTplFuncs creates a big funcMap with all strings functions and more for the template.
@@ -113,7 +158,7 @@ func getTplFuncs(config *Config) template.FuncMap {
 		"escape":      EscapeArg,
 		"raw":         UnescapeArg,
 		"unescape":    UnescapeArg,
-		"cmdsdir": func() string {
+		"configdir": func() string {
 			return filepath.Dir(config.File)
 		},
 		"error": func(args ...interface{}) string {
@@ -136,9 +181,9 @@ func getTplFuncs(config *Config) template.FuncMap {
 			switch term {
 			case TermBash:
 				res += "\nread response "
-			case TermCmd:
-				res += "\nset /p response=\"\" "
-			case TermPowershell:
+			/*case TermCmd:
+			res += "\nset /p response=\"\" "*/
+			case TermPowershell, TermCmd:
 				res += "\n$response = Read-Host -Prompt '' "
 			}
 			return res

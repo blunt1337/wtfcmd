@@ -61,7 +61,7 @@ func GetTerminal() TermType {
 }
 
 // GetLangAndCommandTemplate returns the language and the command template for this terminal.
-func GetLangAndCommandTemplate(cmd *CommandDefinition) ([]string, string) {
+func GetLangAndCommandTemplate(cmd *TermDependant) ([]string, string) {
 	// Get the right command
 	var cmdWrapper []string
 	var cmdTpl string
@@ -146,7 +146,7 @@ func UnescapeArg(param interface{}) interface{} {
 }
 
 // CmdAvailability returns a message if the command is not available on the OS.
-func CmdAvailability(cmd *CommandDefinition) string {
+func CmdAvailability(cmd *TermDependant) string {
 	switch term {
 	case TermBash:
 		if cmd.Bash == "" {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -16,10 +17,11 @@ type Config struct {
 	File  string
 	Group []string
 	Name  []string
-	Cmd   *CommandDefinition
+	Cmd   *TermDependant
 	Desc  string
 	Args  []*ArgOrFlag
 	Flags []*ArgOrFlag
+	Cwd   *TermDependant
 }
 
 // ArgOrFlag holds an arguments or flags from the config.
@@ -32,8 +34,8 @@ type ArgOrFlag struct {
 	IsArray  bool
 }
 
-// CommandDefinition holds a command for bash, cmd, powershell from the config.
-type CommandDefinition struct {
+// TermDependant holds a string for bash, cmd, powershell from the config.
+type TermDependant struct {
 	Bash       string
 	Powershell string
 	// Cmd string
@@ -110,11 +112,17 @@ func parseConfig(data interface{}) (*Config, error) {
 					res.Desc = strings.Join(value, "\n")
 				}
 			case "cmd":
-				value, err := parseCommand(v)
+				value, err := parseTermDependant(v, "\n")
 				if err != nil {
-					return nil, fmt.Errorf(".cmd%s", err.Error())
+					return nil, fmt.Errorf(".%s%s", k, err.Error())
 				}
 				res.Cmd = value
+			case "cwd":
+				value, err := parseTermDependant(v, string(os.PathSeparator))
+				if err != nil {
+					return nil, fmt.Errorf(".%s%s", k, err.Error())
+				}
+				res.Cwd = value
 			case "args", "flags":
 				value, err := parseArgOrFlagArray(v, k == "args")
 				if err != nil {
@@ -194,15 +202,15 @@ func parseStringArray(data interface{}) ([]string, error) {
 	}
 }
 
-// parseCommand checks and returns a command definition from the json interface.
-func parseCommand(data interface{}) (*CommandDefinition, error) {
-	res := new(CommandDefinition)
+// parseTermDependant checks and returns an os definition from the json interface.
+func parseTermDependant(data interface{}, jointer string) (*TermDependant, error) {
+	res := new(TermDependant)
 
 	// Map
 	if obj, ok := data.(map[string]interface{}); ok {
 		for k, subdata := range obj {
 			switch k {
-			case "bash", "cmd", "powershell":
+			case "bash" /*"cmd",*/, "powershell":
 				// String/array
 				value, err := parseStringArray(subdata)
 				if err != nil {
@@ -211,14 +219,14 @@ func parseCommand(data interface{}) (*CommandDefinition, error) {
 
 				switch k {
 				case "bash":
-					res.Bash = strings.TrimSpace(strings.Join(value, "\n"))
+					res.Bash = strings.TrimSpace(strings.Join(value, jointer))
 				case "powershell":
-					res.Powershell = strings.TrimSpace(strings.Join(value, "\n"))
+					res.Powershell = strings.TrimSpace(strings.Join(value, jointer))
 				}
 				// case "cmd":
 				// 	res.Cmd = strings.TrimSpace(strings.Join(value, "\n"))
 			default:
-				return nil, fmt.Errorf("[%s] : unrecognized command language", k)
+				return nil, fmt.Errorf("[%s] : unrecognized terminal type", k)
 			}
 		}
 	} else {

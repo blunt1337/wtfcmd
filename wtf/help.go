@@ -143,6 +143,11 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "	{{replace .Command.Config.Desc \"\\n\" \"\\n	\" -1}}" +
 		/*	*/ "\n\n" +
 		"{{end}}" +
+		"{{if .Command.Config.Cwd}}" +
+		/*	*/ "{{$B}}WORKING DIRECTORY{{$R}}\n" +
+		/*	*/ "	{{cwd .Command.Config}}" +
+		"{{end}}" +
+		"\n\n" +
 		"{{if .Command.Config.Args}}" +
 		/*	*/ "{{$B}}ARGUMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Args}}" +
@@ -170,6 +175,15 @@ func ShowHelpCommand(group *Group, command *Command) {
 		"join":         strings.Join,
 		"replace":      strings.Replace,
 		"availability": CmdAvailability,
+		"cwd": func(cfg *Config) string {
+			switch term {
+			case TermBash:
+				return cfg.Cwd.Bash + " => " + ResolveCwd(cfg)
+			case TermCmd, TermPowershell:
+				return cfg.Cwd.Powershell + " => " + strings.Replace(ResolveCwd(cfg), "\\", "/", -1)
+			}
+			return ""
+		},
 	}).Parse(tplTxt)
 	if err != nil {
 		Panic(err)

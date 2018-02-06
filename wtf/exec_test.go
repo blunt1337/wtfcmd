@@ -37,7 +37,7 @@ func echo(value interface{}, t *testing.T) {
 		params := map[string]interface{}{
 			"test": value,
 		}
-		cmdTpl := &CommandDefinition{
+		cmdTpl := &TermDependant{
 			Bash:       "function _test {\necho \"$1\"\n}\n_test {{esc .test}}",
 			Powershell: "function _test { echo $args[0] } _test {{esc .test}}",
 		}
