@@ -1,11 +1,21 @@
+- name: [install, i]
+  cmd:
+    bash: |
+      go run assetbuilder/build.go $(pwd)/assets && \
+      go install -ldflags="-s -w" blunt.sh/wtfcmd/wtf
+    powershell: |
+      go run assetbuilder/build.go assets
+      go install -ldflags="-s -w" blunt.sh/wtfcmd/wtf
+  desc: Install the command
+
 - name: [build, b]
   cmd:
     bash: |
       go run assetbuilder/build.go $(pwd)/assets && \
-      go install blunt.sh/wtfcmd/wtf
+      go build -ldflags="-s -w" -o wtf blunt.sh/wtfcmd/wtf
     powershell: |
       go run assetbuilder/build.go assets
-      go install blunt.sh/wtfcmd/wtf
+      go build -ldflags="-s -w" -o wtf.exe blunt.sh/wtfcmd/wtf
   desc: Build the command
 
 - name: [test, t]
@@ -13,5 +23,7 @@
   desc: Start tests
 
 - name: [format, f]
-  cmd: gofmt -s -w wtf/*.go
+  cmd:
+    bash: gofmt -s -w *.go
+    powershell: foreach ($file in get-ChildItem *.go) { gofmt -s -w $file.fullname }
   desc: Format go code
