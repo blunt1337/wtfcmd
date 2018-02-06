@@ -38,7 +38,7 @@ A command is an object with the following properties
 > commands can go from a simple strings, to a complexe template.
 > - If the command is compatible with bash/powershell, you can just write a string or string[] as a command.  
 >   But for specific terminals, you can write an object:  
->       ```js
+>   ```js
     {  
     	"bash": [  
     		"echo this command will run in bash",  

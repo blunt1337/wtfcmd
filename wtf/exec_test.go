@@ -41,7 +41,11 @@ func echo(value interface{}, t *testing.T) {
 			Bash:       "function _test {\necho \"$1\"\n}\n_test {{esc .test}}",
 			Powershell: "function _test { echo $args[0] } _test {{esc .test}}",
 		}
-		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}}
+		cwd := &TermDependant{
+			Bash:       "",
+			Powershell: "",
+		}
+		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}, cwd}
 		command := &Command{"command", []string{"cmd"}, config}
 		group := &Group{"group", []string{"g"}, []*Command{command}}
 
