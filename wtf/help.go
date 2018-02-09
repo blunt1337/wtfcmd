@@ -119,8 +119,8 @@ func getUsageTemplate() string {
 	return "{{if .Group.Name}}{{.Group.Name}} {{end}}{{.Command.Name}}" +
 		"{{if .Command.Config.Flags}} [flags]{{end}}" +
 		"{{range .Command.Config.Args}}" +
-		/*	*/ " {{ if .Required}}<{{index .Name 0}}>" +
-		/*	*/ "{{else}}[{{index .Name 0}}={{if .Default}}{{.Default}}{{else}}\"\"{{end}}]" +
+		/*	*/ " {{if .Required}}<{{index .Name 0}}>{{if .IsArray}} ...{{end}}" +
+		/*	*/ "{{else}}[{{index .Name 0}}={{if .Default}}{{.Default}}{{else}}\"\"{{end}}]{{if .IsArray}} ...{{end}}" +
 		/*	*/ "{{end}}" +
 		"{{end}}"
 }
@@ -146,12 +146,22 @@ func ShowHelpCommand(group *Group, command *Command) {
 		"{{if .Command.Config.Cwd}}" +
 		/*	*/ "{{$B}}WORKING DIRECTORY{{$R}}\n" +
 		/*	*/ "	{{cwd .Command.Config}}" +
+		/*	*/ "\n\n" +
 		"{{end}}" +
-		"\n\n" +
 		"{{if .Command.Config.Args}}" +
 		/*	*/ "{{$B}}ARGUMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Args}}" +
-		/*		*/ "	{{$B}}{{index .Name 0}}{{$R}} ({{if .Test}}{{.Test}}{{else}}string{{end}}, {{if .Required}}required{{else}}default {{if .Default}}{{.Default}}{{else}}\"\"{{end}}{{end}})\n\n" +
+		/*		*/ "	{{$B}}{{index .Name 0}}{{$R}} (" +
+		/*		*/ "{{if .Test}}" +
+		/*			*/ "{{if eq (substr .Test 0 0) \"$\"}}" +
+		/*				*/ "{{substr .Test 1}}" +
+		/*			*/ "{{else}}" +
+		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
+		/*			*/ "{{end}}" +
+		/*		*/ "{{else}}string{{end}}" +
+		/*		*/ "{{if .IsArray}}[]{{end}}" +
+		/*		*/ ", {{if .Required}}required{{else}}default {{if .Default}}{{.Default}}{{else}}\"\"{{end}}{{end}}" +
+		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
 		/*		*/ "{{end}}\n" +
@@ -161,8 +171,17 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "{{$B}}FLAGS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Flags}}" +
 		/*		*/ "	{{$B}}--{{index .Name 0}}{{$R}}" +
-		/*		*/ "{{$l := len .Name}}{{if gt $l 1}}{{range $index, $Name := .Name}}{{if ne $index 0}}, -{{$Name}}{{end}}{{end}}{{end}}" +
-		/*		*/ " ({{if .Test}}{{.Test}}{{else}}string{{end}}{{if .Default}}, default {{.Default}}{{end}})\n\n" +
+		/*		*/ "{{$l := len .Name}}{{if gt $l 1}}{{range $index, $Name := .Name}}{{if ne $index 0}}, -{{$Name}}{{end}}{{end}}{{end}} (" +
+		/*		*/ "{{if .Test}}" +
+		/*			*/ "{{if eq (substr .Test 0 0) \"$\"}}" +
+		/*				*/ "{{substr .Test 1}}" +
+		/*			*/ "{{else}}" +
+		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
+		/*			*/ "{{end}}" +
+		/*		*/ "{{else}}string{{end}}" +
+		/*		*/ "{{if .IsArray}}[]{{end}}" +
+		/*		*/ "{{if .Default}}, default {{.Default}}{{end}}" +
+		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
 		/*		*/ "{{end}}\n" +
@@ -183,6 +202,12 @@ func ShowHelpCommand(group *Group, command *Command) {
 				return cfg.Cwd.Powershell + " => " + strings.Replace(ResolveCwd(cfg), "\\", "/", -1)
 			}
 			return ""
+		},
+		"substr": func(str string, from int, to int) string {
+			if to == -1 {
+				return str[from:]
+			}
+			return str[from:to]
 		},
 	}).Parse(tplTxt)
 	if err != nil {
