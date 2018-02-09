@@ -176,6 +176,11 @@ func parseConfig(data interface{}) (*Config, error) {
 			return nil, fmt.Errorf(".args : the argument %s cannot be required after an optionnal one", name)
 		}
 
+		// Only the last argument can be an array
+		if name, ok := checkArgIsArray(res.Args); !ok {
+			return nil, fmt.Errorf(".args : the argument %s cannot be an array, only last argument can", name)
+		}
+
 		return res, nil
 	}
 	return nil, errors.New(" : the configuration must be an object")
@@ -286,12 +291,12 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 				case "desc":
 					res.Desc = strings.Join(value, "\n")
 				}
-			case "required", "is_array":
+			case "required", "is_array", "array":
 				if subvalue, ok := v.(bool); ok {
 					switch k {
 					case "required":
 						res.Required = subvalue
-					case "is_array":
+					case "is_array", "array":
 						res.IsArray = subvalue
 					}
 				} else {
@@ -345,11 +350,6 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 		// No required on flags
 		if !isArg && res.Required {
 			return nil, errors.New(".required : flags cannot be required")
-		}
-
-		// No array for arguments
-		if isArg && res.IsArray {
-			return nil, errors.New(".is_array : args cannot be arrays")
 		}
 
 		return res, nil
@@ -416,6 +416,17 @@ func checkArgOrder(args []*ArgOrFlag) (string, bool) {
 			return arg.Name[0], false
 		}
 		lastRequired = arg.Required
+	}
+	return "", true
+}
+
+// checkArgIsArray returns true if no argument has "is_array = true", except last one
+func checkArgIsArray(args []*ArgOrFlag) (string, bool) {
+	lastIndex := len(args) - 1
+	for index, arg := range args {
+		if index != lastIndex && arg.IsArray {
+			return arg.Name[0], false
+		}
 	}
 	return "", true
 }
