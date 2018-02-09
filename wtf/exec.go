@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -158,6 +159,8 @@ func getTplFuncs(config *Config) template.FuncMap {
 		"escape":      EscapeArg,
 		"raw":         UnescapeArg,
 		"unescape":    UnescapeArg,
+		"json":        json.Marshal,
+		"jsonIndent":  json.MarshalIndent,
 		"configdir": func() string {
 			return filepath.Dir(config.File)
 		},

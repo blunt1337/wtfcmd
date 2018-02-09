@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -342,6 +343,13 @@ func checkValue(value string, test string) (interface{}, error) {
 			return "", errors.New("file or directory not found")
 		}
 		return value, nil
+	case "$json":
+		// Parse the json
+		var data interface{}
+		if err := json.Unmarshal([]byte(value), &data); err != nil {
+			return "", fmt.Errorf("cannot decode json: %s", err.Error())
+		}
+		return data, nil
 	default:
 		// Regex
 		regex := regexp.MustCompile(test)
