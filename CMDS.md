@@ -117,6 +117,7 @@ An argument is an object with the following properties
 > - `$file` to check for an existing files
 > - `$dir` to check for an existing directory
 > - `$dir/file` to check for an existing file or directory
+> - `$json` to check and parse the argument as a json object
 
 ### Flags
 A flag is an object with the following properties
@@ -152,3 +153,4 @@ A flag is an object with the following properties
 > - `$file` to check for an existing files
 > - `$dir` to check for an existing directory
 > - `$dir/file` to check for an existing file or directory
+> - `$json` to check and parse the flag as a json object
