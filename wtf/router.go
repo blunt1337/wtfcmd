@@ -207,16 +207,28 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			}
 
 			addParamValue(res, name, value, argCfg.IsArray)
-			argIndex++
+			if !argCfg.IsArray {
+				argIndex++
+			}
 			continue
 		}
 		ShowCommandError("too many arguments", group, command, nil)
 	}
 
+	//TODO: check default args/flags
+
 	// Defaults & required
 	l = len(command.Config.Args)
 	for ; argIndex < l; argIndex++ {
 		arg := command.Config.Args[argIndex]
+
+		// Ignore if last arg is a filled array
+		if arg.IsArray {
+			if _, ok := res[arg.Name[0]]; ok {
+				break
+			}
+		}
+
 		if arg.Required {
 			msg := "missing required argument: " + arg.Name[0]
 			if len(arg.Desc) > 0 {
