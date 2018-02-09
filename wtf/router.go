@@ -215,8 +215,6 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 		ShowCommandError("too many arguments", group, command, nil)
 	}
 
-	//TODO: check default args/flags
-
 	// Defaults & required
 	l = len(command.Config.Args)
 	for ; argIndex < l; argIndex++ {
@@ -235,23 +233,15 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 				msg += ".\n" + arg.Desc
 			}
 			ShowCommandError(msg, group, command, nil)
-		} else if arg.Default == nil {
-			addParamValue(res, arg.Name[0], "", false)
 		} else {
-			addParamValue(res, arg.Name[0], arg.Default, arg.IsArray)
+			addParamValue(res, arg.Name[0], arg.Default, false)
 		}
 	}
 
 	// Default flags
 	for _, flag := range command.Config.Flags {
-		if flag.Default != nil {
-			if _, ok := res[flag.Name[0]]; !ok {
-				addParamValue(res, flag.Name[0], flag.Default, flag.IsArray)
-			}
-		} else if flag.Test == "$bool" {
-			if _, ok := res[flag.Name[0]]; !ok {
-				addParamValue(res, flag.Name[0], false, flag.IsArray)
-			}
+		if _, ok := res[flag.Name[0]]; !ok {
+			addParamValue(res, flag.Name[0], flag.Default, false)
 		}
 	}
 

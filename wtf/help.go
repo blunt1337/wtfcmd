@@ -114,13 +114,25 @@ func ShowHelp(groups []*Group, std *os.File) {
 	}
 }
 
+// getDefaultValueTemplate returns the template string for the default value.
+func getDefaultValueTemplate() string {
+	return "{{if .IsArray}}[" +
+		/*	*/ "{{range $index, $default := .Default}}" +
+		/*		*/ "{{if $index}}, {{end}}" +
+		/*		*/ "{{printf \"%#v\" $default}}" +
+		/*	*/ "{{end}}" +
+		"]{{else}}" +
+		/*	*/ "{{printf \"%#v\" .Default}}" +
+		"{{end}}"
+}
+
 // getUsageTemplate returns the template string for command usage.
 func getUsageTemplate() string {
 	return "{{if .Group.Name}}{{.Group.Name}} {{end}}{{.Command.Name}}" +
 		"{{if .Command.Config.Flags}} [flags]{{end}}" +
 		"{{range .Command.Config.Args}}" +
-		/*	*/ " {{if .Required}}<{{index .Name 0}}>{{if .IsArray}} ...{{end}}" +
-		/*	*/ "{{else}}[{{index .Name 0}}={{if .Default}}{{.Default}}{{else}}\"\"{{end}}]{{if .IsArray}} ...{{end}}" +
+		/*	*/ " {{if .Required}}<{{index .Name 0}}>{{if .IsArray}}...{{end}}" +
+		/*	*/ "{{else}}[{{index .Name 0}}=" + getDefaultValueTemplate() + "]{{if .IsArray}}...{{end}}" +
 		/*	*/ "{{end}}" +
 		"{{end}}"
 }
@@ -152,15 +164,15 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "{{$B}}ARGUMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Args}}" +
 		/*		*/ "	{{$B}}{{index .Name 0}}{{$R}} (" +
+		/*		*/ "{{if .IsArray}}array of {{end}}" +
 		/*		*/ "{{if .Test}}" +
-		/*			*/ "{{if eq (substr .Test 0 0) \"$\"}}" +
-		/*				*/ "{{substr .Test 1}}" +
+		/*			*/ "{{if hasPrefix .Test \"$\"}}" +
+		/*				*/ "{{trimLeft .Test \"$\"}}" +
 		/*			*/ "{{else}}" +
 		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
 		/*			*/ "{{end}}" +
 		/*		*/ "{{else}}string{{end}}" +
-		/*		*/ "{{if .IsArray}}[]{{end}}" +
-		/*		*/ ", {{if .Required}}required{{else}}default {{if .Default}}{{.Default}}{{else}}\"\"{{end}}{{end}}" +
+		/*		*/ ", {{if .Required}}required{{else}}default " + getDefaultValueTemplate() + "{{end}}" +
 		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
@@ -172,15 +184,15 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "{{range .Command.Config.Flags}}" +
 		/*		*/ "	{{$B}}--{{index .Name 0}}{{$R}}" +
 		/*		*/ "{{$l := len .Name}}{{if gt $l 1}}{{range $index, $Name := .Name}}{{if ne $index 0}}, -{{$Name}}{{end}}{{end}}{{end}} (" +
+		/*		*/ "{{if .IsArray}}array of {{end}}" +
 		/*		*/ "{{if .Test}}" +
-		/*			*/ "{{if eq (substr .Test 0 0) \"$\"}}" +
-		/*				*/ "{{substr .Test 1}}" +
+		/*			*/ "{{if hasPrefix .Test \"$\"}}" +
+		/*				*/ "{{trimLeft .Test \"$\"}}" +
 		/*			*/ "{{else}}" +
 		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
 		/*			*/ "{{end}}" +
 		/*		*/ "{{else}}string{{end}}" +
-		/*		*/ "{{if .IsArray}}[]{{end}}" +
-		/*		*/ "{{if .Default}}, default {{.Default}}{{end}}" +
+		/*		*/ ", default " + getDefaultValueTemplate() +
 		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
@@ -194,6 +206,8 @@ func ShowHelpCommand(group *Group, command *Command) {
 		"join":         strings.Join,
 		"replace":      strings.Replace,
 		"availability": CmdAvailability,
+		"hasPrefix":    strings.HasPrefix,
+		"trimLeft":     strings.TrimLeft,
 		"cwd": func(cfg *Config) string {
 			switch term {
 			case TermBash:
@@ -202,12 +216,6 @@ func ShowHelpCommand(group *Group, command *Command) {
 				return cfg.Cwd.Powershell + " => " + strings.Replace(ResolveCwd(cfg), "\\", "/", -1)
 			}
 			return ""
-		},
-		"substr": func(str string, from int, to int) string {
-			if to == -1 {
-				return str[from:]
-			}
-			return str[from:to]
 		},
 	}).Parse(tplTxt)
 	if err != nil {

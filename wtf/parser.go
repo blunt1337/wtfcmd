@@ -304,10 +304,19 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 				}
 			case "default":
 				switch value := v.(type) {
+				case []interface{}:
+					for index, v2 := range value {
+						switch v2.(type) {
+						case int, int32, int64, float64, float32, string, bool:
+							res.Default = value
+						default:
+							return nil, fmt.Errorf(".default[%s] : must be a number, a string or a boolean", index)
+						}
+					}
 				case int, int32, int64, float64, float32, string, bool:
 					res.Default = value
 				default:
-					return nil, errors.New(".default : must be a number or a string")
+					return nil, errors.New(".default : must be a number, a string or a boolean")
 				}
 			case "test":
 				if subvalue, ok := v.(string); ok {
@@ -337,11 +346,6 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 			}
 		}
 
-		// Not a required = true with a "default"
-		if res.Required && res.Default != nil {
-			return nil, errors.New(".Default : cannot have a default value if required")
-		}
-
 		// Args have no aliases
 		if isArg && len(res.Name) > 1 {
 			return nil, errors.New(".name : argument cannot have aliases")
@@ -350,6 +354,38 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 		// No required on flags
 		if !isArg && res.Required {
 			return nil, errors.New(".required : flags cannot be required")
+		}
+
+		// Not a required = true with a "default"
+		if res.Required && res.Default != nil {
+			return nil, errors.New(".default : cannot have a default value if required")
+		}
+
+		// Check default's type again, now that we know if it's an array or not
+		if res.Default != nil {
+			_, defaultIsArray := res.Default.([]interface{})
+
+			if res.IsArray && !defaultIsArray {
+				res.Default = []interface{}{res.Default}
+			} else if !res.IsArray && defaultIsArray {
+				return nil, errors.New(".default : must be a number, a string or a boolean")
+			}
+		}
+
+		// Default 'Default'
+		if !res.Required && res.Default == nil {
+			if res.IsArray {
+				res.Default = []interface{}{}
+			} else {
+				switch res.Test {
+				case "$bool":
+					res.Default = false
+				case "$int", "$uint", "$float", "$number":
+					res.Default = 0
+				default:
+					res.Default = ""
+				}
+			}
 		}
 
 		return res, nil
