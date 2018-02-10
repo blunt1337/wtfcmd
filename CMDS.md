@@ -40,11 +40,11 @@ A command is an object with the following properties
 >   But for specific terminals, you can write an object:  
 >   ```js
     {  
-    	"bash": [  
-    		"echo this command will run in bash",  
-    		"echo multilines works too"  
-    	],  
-    	"powershell": "echo this command will run with powershell.exe"  
+        "bash": [  
+            "echo this command will run in bash",  
+            "echo multilines works too"  
+        ],  
+        "powershell": "echo this command will run with powershell.exe"  
     }  
     ```
 > - The command format is **go template** https://golang.org/pkg/text/template/.
