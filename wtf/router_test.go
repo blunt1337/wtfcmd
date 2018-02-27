@@ -21,6 +21,7 @@ func ExampleRouter1() {
 					Name:     []string{"b_not_req"},
 					Required: false,
 					IsArray:  false,
+					Default:  "",
 				},
 			},
 			Flags: []*ArgOrFlag{
@@ -48,7 +49,7 @@ func ExampleRouter1() {
 				{
 					Name:     []string{"eflag", "e"},
 					Required: false,
-					Default:  "e",
+					Default:  []string{"e"},
 					IsArray:  true,
 				},
 			},
