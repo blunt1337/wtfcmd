@@ -156,35 +156,35 @@ func getTplFuncs(config *Config) template.FuncMap {
 		"trimSpace":   strings.TrimSpace,
 		"trimSuffix":  strings.TrimSuffix,
 		// Escape a string for bash/powershell.
-		"esc":         EscapeArg,
-		"escape":      EscapeArg,
+		"esc":    EscapeArg,
+		"escape": EscapeArg,
 		// Unescape a string from bash/powershell.
-		"raw":         UnescapeArg,
-		"unescape":    UnescapeArg,
+		"raw":      UnescapeArg,
+		"unescape": UnescapeArg,
 		// Convert first argument to json.
 		// Second argument is pretty print, default false.
 		// Return "false" on error.
-		"json":        func(arg_and_pretty ...interface{}) (string) {
+		"json": func(arg_and_pretty ...interface{}) string {
 			if len(arg_and_pretty) == 0 {
 				return "null"
 			}
-			
+
 			pretty := false
 			if len(arg_and_pretty) == 2 {
 				if arg_pretty, ok := arg_and_pretty[1].(bool); ok && arg_pretty {
 					pretty = arg_pretty
 				}
 			}
-			
+
 			var b []byte
 			var err error
-			
+
 			if pretty {
 				b, err = json.MarshalIndent(arg_and_pretty[0], "", "\t")
 			} else {
-					b, err = json.Marshal(arg_and_pretty[0])
+				b, err = json.Marshal(arg_and_pretty[0])
 			}
-			
+
 			if err != nil {
 				return "false"
 			}
@@ -192,12 +192,12 @@ func getTplFuncs(config *Config) template.FuncMap {
 		},
 		// Convert a json string into an interface{}.
 		// Return false on error.
-		"jsonParse": func(arg string) (interface{}) {
+		"jsonParse": func(arg string) interface{} {
 			var res interface{}
 			err := json.Unmarshal([]byte(arg), &res)
-		  	if err != nil {
-		  		return false
-		  	}
+			if err != nil {
+				return false
+			}
 			return res
 		},
 		// Directory of the configuration file of the command running.
@@ -248,7 +248,7 @@ func getTplFuncs(config *Config) template.FuncMap {
 func join(args []interface{}) string {
 	var res string
 	for _, arg := range args {
-		res += fmt.Sprint(arg) + " "
+		res += fmt.Sprint(EscapeArg(arg)) + " "
 	}
 	return res
 }

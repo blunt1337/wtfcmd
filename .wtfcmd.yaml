@@ -13,6 +13,7 @@
   desc: Start tests
 
 - name: [format, f]
+  cwd: ./wtf
   cmd:
     bash: gofmt -s -w *.go
     powershell: foreach ($file in get-ChildItem *.go) { gofmt -s -w $file.fullname }
