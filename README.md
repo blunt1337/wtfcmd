@@ -100,7 +100,7 @@ Check the [full configuration documentation](CMDS.md) for more.
 - [ ] UI to build command files
 - [ ] Raw option, to forward all options/arguments not defined into a single string variable
 - [ ] Global configurations in a folder, defined by an env variable
-- [ ] Array arguments (last argument can be arg* or arg+, for an array)
+- [x] Array arguments (last argument can be arg* or arg+, for an array)
 - [ ] Maybe, print the command documentation after a double tab?
 - [ ] Autocomplete filenames if the argument/flag is a file/folder
 

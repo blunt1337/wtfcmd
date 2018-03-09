@@ -40,11 +40,11 @@ A command is an object with the following properties
 >   But for specific terminals, you can write an object:  
 >   ```js
     {  
-    	"bash": [  
-    		"echo this command will run in bash",  
-    		"echo multilines works too"  
-    	],  
-    	"powershell": "echo this command will run with powershell.exe"  
+        "bash": [  
+            "echo this command will run in bash",  
+            "echo multilines works too"  
+        ],  
+        "powershell": "echo this command will run with powershell.exe"  
     }  
     ```
 > - The command format is **go template** https://golang.org/pkg/text/template/.
@@ -101,6 +101,10 @@ An argument is an object with the following properties
 > - The value if the argument is not required and not filled.
 > - Can be anything except an object or array.
 
+##### is_array
+> **Optional, default false** the value is an array  
+> Only the last argument can be an array. E.g. "wtf cmd a b c d" can be 1 argument with [a, b, c, d].
+
 ##### test
 > **Optional** test code/regex  
 > The test will show an error message if the argument doesn't pass it.  
@@ -113,6 +117,7 @@ An argument is an object with the following properties
 > - `$file` to check for an existing files
 > - `$dir` to check for an existing directory
 > - `$dir/file` to check for an existing file or directory
+> - `$json` to check and parse the argument as a json object
 
 ### Flags
 A flag is an object with the following properties
@@ -134,8 +139,7 @@ A flag is an object with the following properties
 
 ##### is_array
 > **Optional, default false** the value is an array  
-> So multiple --flag value1 --flag value2 make an array flag=[value1, value2].  
-> The default value will make flag=[default value]
+> So multiple --flag value1 --flag value2 make an array flag=[value1, value2].
 
 ##### test
 > **Optional** test code/regex  
@@ -149,3 +153,4 @@ A flag is an object with the following properties
 > - `$file` to check for an existing files
 > - `$dir` to check for an existing directory
 > - `$dir/file` to check for an existing file or directory
+> - `$json` to check and parse the flag as a json object

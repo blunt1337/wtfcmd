@@ -176,6 +176,11 @@ func parseConfig(data interface{}) (*Config, error) {
 			return nil, fmt.Errorf(".args : the argument %s cannot be required after an optionnal one", name)
 		}
 
+		// Only the last argument can be an array
+		if name, ok := checkArgIsArray(res.Args); !ok {
+			return nil, fmt.Errorf(".args : the argument %s cannot be an array, only last argument can", name)
+		}
+
 		return res, nil
 	}
 	return nil, errors.New(" : the configuration must be an object")
@@ -266,9 +271,9 @@ func parseArgOrFlagArray(data interface{}, isArg bool) ([]*ArgOrFlag, error) {
 }
 
 // parseArgOrFlag checks and parses arg/flag from the json struct.
-func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
+func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 	// Assertion of object
-	if data, ok := json.(map[string]interface{}); ok {
+	if data, ok := jsonInterface.(map[string]interface{}); ok {
 		res := new(ArgOrFlag)
 
 		// Foreach key => value
@@ -286,24 +291,19 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 				case "desc":
 					res.Desc = strings.Join(value, "\n")
 				}
-			case "required", "is_array":
+			case "required", "is_array", "array":
 				if subvalue, ok := v.(bool); ok {
 					switch k {
 					case "required":
 						res.Required = subvalue
-					case "is_array":
+					case "is_array", "array":
 						res.IsArray = subvalue
 					}
 				} else {
 					return nil, fmt.Errorf(".%s : must be a boolean", k)
 				}
 			case "default":
-				switch value := v.(type) {
-				case int, int32, int64, float64, float32, string, bool:
-					res.Default = value
-				default:
-					return nil, errors.New(".default : must be a number or a string")
-				}
+				// Ignore now, do it when we have all other info
 			case "test":
 				if subvalue, ok := v.(string); ok {
 					res.Test = subvalue
@@ -332,11 +332,6 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 			}
 		}
 
-		// Not a required = true with a "default"
-		if res.Required && res.Default != nil {
-			return nil, errors.New(".Default : cannot have a default value if required")
-		}
-
 		// Args have no aliases
 		if isArg && len(res.Name) > 1 {
 			return nil, errors.New(".name : argument cannot have aliases")
@@ -347,9 +342,63 @@ func parseArgOrFlag(json interface{}, isArg bool) (*ArgOrFlag, error) {
 			return nil, errors.New(".required : flags cannot be required")
 		}
 
-		// No array for arguments
-		if isArg && res.IsArray {
-			return nil, errors.New(".is_array : args cannot be arrays")
+		// Prevent is_array and json together
+		if res.IsArray && res.Test == "$json" {
+			return nil, errors.New(".test : cannot be both $json and is_array at the same time")
+		}
+
+		// Default
+		if rawDefault, ok := data["default"]; ok {
+			// Not a required = true with a "default"
+			if res.Required {
+				return nil, errors.New(".default : cannot have a default value if required")
+			}
+
+			// Read value
+			switch value := rawDefault.(type) {
+			case []interface{}:
+				// Array only valid for is_array
+				if !res.IsArray {
+					return nil, errors.New(".default : must be a number, a string or a boolean")
+				}
+
+				for index, v2 := range value {
+					switch v2.(type) {
+					case int, int32, int64, float64, float32, string, bool:
+						res.Default = value
+					default:
+						return nil, fmt.Errorf(".default[%s] : must be a number, a string or a boolean", index)
+					}
+				}
+			case int, int32, int64, float64, float32, bool, string:
+				if str, isStr := value.(string); isStr && res.Test == "$json" {
+					var obj interface{}
+					if err := json.Unmarshal([]byte(str), &obj); err != nil {
+						return nil, fmt.Errorf(".default : cannot decode json: %s", err.Error())
+					}
+					res.Default = obj
+				} else if res.IsArray {
+					res.Default = []interface{}{value}
+				} else {
+					res.Default = value
+				}
+			default:
+				return nil, errors.New(".default : must be a number, a string or a boolean")
+			}
+		} else if !res.Required {
+			// Default 'Default'
+			if res.IsArray {
+				res.Default = []interface{}{}
+			} else {
+				switch res.Test {
+				case "$bool", "$json":
+					res.Default = false
+				case "$int", "$uint", "$float", "$number":
+					res.Default = 0
+				default:
+					res.Default = ""
+				}
+			}
 		}
 
 		return res, nil
@@ -416,6 +465,17 @@ func checkArgOrder(args []*ArgOrFlag) (string, bool) {
 			return arg.Name[0], false
 		}
 		lastRequired = arg.Required
+	}
+	return "", true
+}
+
+// checkArgIsArray returns true if no argument has "is_array = true", except last one
+func checkArgIsArray(args []*ArgOrFlag) (string, bool) {
+	lastIndex := len(args) - 1
+	for index, arg := range args {
+		if index != lastIndex && arg.IsArray {
+			return arg.Name[0], false
+		}
 	}
 	return "", true
 }

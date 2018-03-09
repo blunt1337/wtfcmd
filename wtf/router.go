@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -207,7 +208,9 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 			}
 
 			addParamValue(res, name, value, argCfg.IsArray)
-			argIndex++
+			if !argCfg.IsArray {
+				argIndex++
+			}
 			continue
 		}
 		ShowCommandError("too many arguments", group, command, nil)
@@ -217,29 +220,29 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 	l = len(command.Config.Args)
 	for ; argIndex < l; argIndex++ {
 		arg := command.Config.Args[argIndex]
+
+		// Ignore if last arg is a filled array
+		if arg.IsArray {
+			if _, ok := res[arg.Name[0]]; ok {
+				break
+			}
+		}
+
 		if arg.Required {
 			msg := "missing required argument: " + arg.Name[0]
 			if len(arg.Desc) > 0 {
 				msg += ".\n" + arg.Desc
 			}
 			ShowCommandError(msg, group, command, nil)
-		} else if arg.Default == nil {
-			addParamValue(res, arg.Name[0], "", false)
 		} else {
-			addParamValue(res, arg.Name[0], arg.Default, arg.IsArray)
+			addParamValue(res, arg.Name[0], arg.Default, false)
 		}
 	}
 
 	// Default flags
 	for _, flag := range command.Config.Flags {
-		if flag.Default != nil {
-			if _, ok := res[flag.Name[0]]; !ok {
-				addParamValue(res, flag.Name[0], flag.Default, flag.IsArray)
-			}
-		} else if flag.Test == "$bool" {
-			if _, ok := res[flag.Name[0]]; !ok {
-				addParamValue(res, flag.Name[0], false, flag.IsArray)
-			}
+		if _, ok := res[flag.Name[0]]; !ok {
+			addParamValue(res, flag.Name[0], flag.Default, false)
 		}
 	}
 
@@ -340,6 +343,13 @@ func checkValue(value string, test string) (interface{}, error) {
 			return "", errors.New("file or directory not found")
 		}
 		return value, nil
+	case "$json":
+		// Parse the json
+		var data interface{}
+		if err := json.Unmarshal([]byte(value), &data); err != nil {
+			return "", fmt.Errorf("cannot decode json: %s", err.Error())
+		}
+		return data, nil
 	default:
 		// Regex
 		regex := regexp.MustCompile(test)

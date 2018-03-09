@@ -13,6 +13,7 @@
   desc: Start tests
 
 - name: [format, f]
+  cwd: ./wtf
   cmd:
     bash: gofmt -s -w *.go
     powershell: foreach ($file in get-ChildItem *.go) { gofmt -s -w $file.fullname }
@@ -24,13 +25,15 @@
     - name: os
       desc: for which OS to build
       required: true
+      is_array: true
+  flags:
     - name: arch
       desc: for which architecture to build
       default: 386
   cmd:
     bash: |
-      go run assetbuilder/build.go $(pwd)/assets && \
-      env GOOS={{esc .os}} GOARCH={{esc .arch}} go build -ldflags="-s -w" -o wtf.{{if eq .os "windows"}}exe{{else}}{{.os}}{{end}} blunt.sh/wtfcmd/wtf
+      go run assetbuilder/build.go $(pwd)/assets
+      {{- range .os}} && env GOOS={{esc .}} GOARCH={{esc $.arch}} go build -ldflags="-s -w" -o wtf.{{if eq . "windows"}}exe{{else}}{{.}}{{end}} blunt.sh/wtfcmd/wtf{{end}}
     powershell: |
       go run assetbuilder/build.go assets
       $env:GOOS = {{esc .os}}
