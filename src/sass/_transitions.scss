@@ -1,0 +1,22 @@
+// Simple transitions
+
+// Fade with a translation to the top
+.fade-top-enter {
+	transform: translateY(50px);
+	opacity: 0;
+}
+.fade-top-leave-to {
+	transform: translateY(-50px);
+	opacity: 0;
+}
+.fade-top-enter-active, .fade-top-leave-active {
+	transition: transform $transition-duration ease, opacity $transition-duration ease;
+}
+
+// Just fade in/out
+.fade-enter, .fade-leave-to {
+	opacity: 0;
+}
+.fade-enter-active, .fade-leave-active {
+	transition: opacity $transition-duration ease;
+}

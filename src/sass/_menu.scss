@@ -1,0 +1,25 @@
+.menu {
+	list-style: none;
+	padding: 0;
+	
+	li {
+		display: inline-block;
+		text-transform: uppercase;
+		margin-right: .625em;
+		
+		a {
+			color: $dark;
+		}
+		
+		&.selected a {
+			color: theme-color("primary");
+		}
+	}
+	
+	&.vertical {
+		li {
+			display: block;
+			margin-right: 0;
+		}
+	}
+}

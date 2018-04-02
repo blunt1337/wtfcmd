@@ -1,0 +1,29 @@
+- name: [init, i]
+  cmd: npm install
+  desc: Install dependencies
+  cwd: ./src
+
+- name: [watch, w]
+  cmd: node_modules/.bin/webpack -w --config webpack.dev.js
+  desc: Build files on source code change
+  cwd: ./src
+
+- name: [serve, s]
+  cmd: node node_modules/webpack-serve/cli.js --config webpack.dev.js --port 1337 --open
+  desc: Build files on source code change and create a local server
+  cwd: ./src
+
+- name: [build, b]
+  cmd:
+    bash: >
+      find . -maxdepth 1 -type f -not -name 'CNAME' -not -name '.wtfcmd.yml' -delete && 
+      cd src && 
+      node_modules/.bin/webpack --config webpack.prod.js && 
+      rm -f ../critical.js ../critical.css
+  desc: Build for production
+  cwd: .
+
+- name: icons
+  cmd: node generate.icons.js
+  desc: Genrate icons from logo.svg
+  cwd: ./src

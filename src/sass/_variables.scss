@@ -1,0 +1,18 @@
+$font-family-sans-serif: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Open Sans,Helvetica Neue,sans-serif;
+$table-cell-padding: 10px;
+$transition-duration: .2s;
+
+$green: #9ACD32;
+$orange: #ED7648;
+$theme-colors: (
+	"primary": $primary
+);
+
+// Bootstraps'
+@import "node_modules/bootstrap/scss/functions";
+@import "node_modules/bootstrap/scss/variables";
+@import "node_modules/bootstrap/scss/mixins";
+
+$grid-breakpoints: map-merge($grid-breakpoints, (xl: 1300px));
+$dark-opacity: rgba(theme-color("dark"), .04);
+$table-accent-bg: $dark-opacity;
