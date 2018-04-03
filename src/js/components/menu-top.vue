@@ -38,10 +38,12 @@ export default {
 	position: sticky;
 	top: 0;
 	padding-top: 1em;
+	padding-bottom: 1em;
 	margin-top: -1em;
+	margin-bottom: 0;
 	z-index: 1000;
 	background: $body-bg;
-	
+		
 	@include media-breakpoint-up(md) {
 		padding-top: 2em;
 		margin-top: -2em;
