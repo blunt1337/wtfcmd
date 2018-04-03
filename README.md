@@ -8,18 +8,15 @@ Build a single json/yaml file with all the commands available in your project, a
 
 # Features
 
-- Run commands with 'wtf my_command_name' defined in a json/yaml file.
-- Auto-generated help pages! so you know what they are for and how to use them.
+- Run commands with ‘wtf my_command_name [params…]’, all defined in a json/yaml file.
+- Auto-generated --help! so you know what they are for and how to use them.
 - Autocomplete all of your commands and flags!
-- Possibility to have custom commands for bash and powershell.exe.
+- Possibility to have custom commands for bash and powershell.exe, of course.
+- So much more, like parameter checks, built in functions to print errors, etc.
 
 # Installation
 
-If you have `go` installed, just run `go install blunt.sh/wtfcmd/wtf`
-  Also [binaries](https://github.com/blunt1337/wtfcmd/releases) are available. Download and put it somewhere in your $PATH.
-  If `wtf` is already in use, you can rename it whatever you like :)
-
-To install the autocomplete, run `wtf --autocomplete install`
+More info on the doc website [http://wtf.blunt.sh/#getting-started](http://wtf.blunt.sh/#getting-started)
 
 # Simple example
 
@@ -92,17 +89,4 @@ I want the port number to be a parameter:
 and change the 8080 of my command to {{.port}}:
 `"cmd": "docker run -it --rm -p {{.port}}:80 -v .:/app --name myproject myimage",`
 
-Check the [full configuration documentation](CMDS.md) for more.
-
-# TODOs
-
-- [ ] More tests
-- [ ] UI to build command files
-- [ ] Raw option, to forward all options/arguments not defined into a single string variable
-- [ ] Global configurations in a folder, defined by an env variable
-- [x] Array arguments (last argument can be arg* or arg+, for an array)
-- [ ] Maybe, print the command documentation after a double tab?
-- [ ] Autocomplete filenames if the argument/flag is a file/folder
-
-To suggest a feature, report a bug, or general discussion:
-http://github.com/blunt1337/wtfcmd/issues/
+Check the [full configuration documentation](http://wtf.blunt.sh/command_definition) for more.
