@@ -40,6 +40,7 @@ Description can be either a string, or an array for multiple lines.
 #### cmd
 command template *(required)*
 
+[More info for the template section here](/template).
 String arrays will be concatenated with "\n".
 If the command is compatible with bash/powershell, you can just write a string or string[] as a command,
 but for specific terminals, you can write an object like:
