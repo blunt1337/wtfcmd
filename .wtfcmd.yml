@@ -15,11 +15,19 @@
 
 - name: [build, b]
   cmd:
-    bash: >
-      find . -maxdepth 1 -type f -not -name 'CNAME' -not -name '.wtfcmd.yml' -delete && 
-      cd src && 
-      node_modules/.bin/webpack --config webpack.prod.js && 
+    bash: |
+      set -e
+      find . -maxdepth 1 -type f -not -name 'CNAME' -not -name '.wtfcmd.yml' -delete
+      cd src
+      node node_modules/.bin/webpack --config webpack.prod.js
       rm -f ../critical.js ../critical.css
+    powershell: |
+      $ErrorActionPreference = "Stop"
+      Remove-Item * -Exclude 'CNAME','.wtfcmd.yml','src','.git'
+      cd src
+      node node_modules/.bin/webpack --config webpack.prod.js
+      Remove-Item ../critical.js
+      Remove-Item ../critical.css
   desc: Build for production
   cwd: .
 
