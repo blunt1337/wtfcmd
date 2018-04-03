@@ -93,7 +93,7 @@ I want to map the root folder of my project to /app, and print the started port:
 We changed the command into a multiline command, calling the info function with our port number,
 and added an escaped configdir variable in the command.
 
-A complete documentation of the 
+A complete documentation of the .wtfcmd file is available at http://wtf.blunt.sh/command_definition, and a documentation of the template format at http://wtf.blunt.sh/template.
 
 <script>
 import Banner from 'js/components/banner'

@@ -35,6 +35,3 @@
   cmd: node generate.icons.js
   desc: Genrate icons from logo.svg
   cwd: ./src
-
-- name: test
-  cmd: echo {{ esc configdir }}
