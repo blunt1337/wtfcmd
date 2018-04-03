@@ -78,3 +78,5 @@
       test: $uint
   desc: Load last lines of server logs
 ```
+
+Submit your samples with a push request at https://github.com/blunt1337/wtfcmd/blob/gh-pages/src/pages/01-samples.md.

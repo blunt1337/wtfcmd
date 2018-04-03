@@ -174,3 +174,5 @@ The value is a string, and it can be:
 - `$dir` to check for an existing directory
 - `$dir/file` to check for an existing file or directory
 - `$json` to check and parse the argument as a json object
+
+To suggest a feature, report a bug, or general discussion: http://github.com/blunt1337/wtfcmd/issues/

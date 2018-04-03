@@ -28,14 +28,14 @@ The following instructions are for **{{ install_mode }}**. Install on <template 
 
 ### Setup your project
 
-It's so simple, just create a .wtfcmd.yml file in the root of your project.
+Create a .wtfcmd.yml file in the root of your project and you're done.
 You can define all the commands the project needs in there, check the [samples](/samples) page to get inspired, or keep reading for a step by step example.
 
 #### Step by step
 
 This is a step by step example to build a .wtfcmd.yml file to start a docker image.
 
-##### 1. it's name
+##### 1. the name
 The name of my command will be `wtf docker start`, but want an alias `wtf dkr s` too.
 I put in my empty .wtfcmd.yml file:
 ```yaml
@@ -43,14 +43,14 @@ I put in my empty .wtfcmd.yml file:
   name: [start, s]
 ```
 
-##### 2. define the command
+##### 2. a command
 ```yaml
 - group: [docker, dkr]
   name: [start, s]
   cmd: docker run -it -p 8080:80 --name myproject myimage
 ```
 
-##### 3. description
+##### 3. a description
 I want my team to know about this command, so i fill 'desc':
 ```yaml
 - group: [docker, dkr]
@@ -59,7 +59,7 @@ I want my team to know about this command, so i fill 'desc':
   desc: Start an http server on the port 8080 by default.
 ```
 
-##### 4. parameters
+##### 4. a parameter
 I want the port number to be a parameter:
 ```yaml
 - group: [docker, dkr]
@@ -75,7 +75,7 @@ I want the port number to be a parameter:
 We added here the "flags" array and changed the command's 8080 by `{{ .port }}`, the name of this new flag.
 You can now call `wtf docker start --port 80` or in short `wtf dkr s -p 80`.
 
-##### 5. functions
+##### 5. add functions
 I want to map the root folder of my project to /app, and print the started port:
 ```yaml
 - group: [docker, dkr]
