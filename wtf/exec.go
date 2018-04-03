@@ -125,36 +125,48 @@ func ResolveCwd(cfg *Config) string {
 func getTplFuncs(config *Config) template.FuncMap {
 	return template.FuncMap{
 		// All strings
-		"contains":    strings.Contains,
-		"containsAny": strings.ContainsAny,
-		"count":       strings.Count,
-		"equalFold":   strings.EqualFold,
-		"fields":      strings.Fields,
-		"fieldsFunc":  strings.FieldsFunc,
-		"hasPrefix":   strings.HasPrefix,
-		"hasSuffix":   strings.HasSuffix,
-		"index":       strings.Index,
-		"indexAny":    strings.IndexAny,
-		"indexFunc":   strings.IndexFunc,
-		"indexRune":   strings.IndexRune,
-		"join":        strings.Join,
-		"lastIndex":   strings.LastIndex,
-		"map":         strings.Map,
-		"newReplacer": strings.NewReplacer,
-		"repeat":      strings.Repeat,
-		"replace":     strings.Replace,
-		"split":       strings.Split,
-		"splitAfter":  strings.SplitAfter,
-		"splitAfterN": strings.SplitAfterN,
-		"splitN":      strings.SplitN,
-		"title":       strings.Title,
-		"toLower":     strings.ToLower,
-		"toTitle":     strings.ToTitle,
-		"toUpper":     strings.ToUpper,
-		"trim":        strings.Trim,
-		"trimPrefix":  strings.TrimPrefix,
-		"trimSpace":   strings.TrimSpace,
-		"trimSuffix":  strings.TrimSuffix,
+		"compare":        strings.Compare,
+		"contains":       strings.Contains,
+		"containsAny":    strings.ContainsAny,
+		"containsRune":   strings.ContainsRune,
+		"count":          strings.Count,
+		"equalFold":      strings.EqualFold,
+		"fields":         strings.Fields,
+		"fieldsFunc":     strings.FieldsFunc,
+		"hasPrefix":      strings.HasPrefix,
+		"hasSuffix":      strings.HasSuffix,
+		"index":          strings.Index,
+		"indexAny":       strings.IndexAny,
+		"indexFunc":      strings.IndexFunc,
+		"indexRune":      strings.IndexRune,
+		"join":           strings.Join,
+		"lastIndex":      strings.LastIndex,
+		"lastIndexAny":   strings.LastIndexAny,
+		"lastIndexByte":  strings.LastIndexByte,
+		"lastIndexFunc":  strings.LastIndexFunc,
+		"map":            strings.Map,
+		"repeat":         strings.Repeat,
+		"replace":        strings.Replace,
+		"split":          strings.Split,
+		"splitAfter":     strings.SplitAfter,
+		"splitAfterN":    strings.SplitAfterN,
+		"splitN":         strings.SplitN,
+		"title":          strings.Title,
+		"toLower":        strings.ToLower,
+		"toLowerSpecial": strings.ToLowerSpecial,
+		"toTitle":        strings.ToTitle,
+		"toTitleSpecial": strings.ToTitleSpecial,
+		"toUpper":        strings.ToUpper,
+		"toUpperSpecial": strings.ToUpperSpecial,
+		"trim":           strings.Trim,
+		"trimFunc":       strings.TrimFunc,
+		"trimLeft":       strings.TrimLeft,
+		"trimLeftFunc":   strings.TrimLeftFunc,
+		"trimPrefix":     strings.TrimPrefix,
+		"trimRight":      strings.TrimRight,
+		"trimRightFunc":  strings.TrimRightFunc,
+		"trimSpace":      strings.TrimSpace,
+		"trimSuffix":     strings.TrimSuffix,
 		// Escape a string for bash/powershell.
 		"esc":    EscapeArg,
 		"escape": EscapeArg,
@@ -208,7 +220,7 @@ func getTplFuncs(config *Config) template.FuncMap {
 			return os.Args[0] + " --builtin Error " + join(args)
 		},
 		"panic": func(args ...interface{}) string {
-			return os.Args[0] + " --builtin Error " + join(args) + "&& exit 1"
+			return os.Args[0] + " --builtin Error " + join(args) + "; exit 1"
 		},
 		"warn": func(args ...interface{}) string {
 			return os.Args[0] + " --builtin Warn " + join(args)
@@ -220,22 +232,19 @@ func getTplFuncs(config *Config) template.FuncMap {
 			return os.Args[0] + " --builtin Made " + join(args)
 		},
 		"ask": func(args ...interface{}) string {
-			res := os.Args[0] + " --builtin Ask " + join(args)
-			switch term {
-			case TermBash:
-				res += "\nread response "
-			/*case TermCmd:
-			res += "\nset /p response=\"\" "*/
-			case TermPowershell, TermCmd:
-				res += "\n$response = Read-Host -Prompt '' "
-			}
-			return res
+			return os.Args[0] + " --builtin Ask " + join(args)
 		},
 		"askYN": func(args ...interface{}) string {
 			return os.Args[0] + " --builtin AskYN " + join(args)
 		},
+		"read": func() string {
+			return os.Args[0] + " --builtin Read ."
+		},
+		"readSecure": func() string {
+			return os.Args[0] + " --builtin ReadSecure ."
+		},
 		/*"AskList": func (args... interface{}) string {
-		    return os.Args[0] + " --builtin AskList " + join(args)
+			return os.Args[0] + " --builtin AskList " + join(args)
 		},*/
 		"bell": func() string {
 			return os.Args[0] + " --builtin Bell ."

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"runtime"
@@ -130,7 +131,7 @@ func CmdAvailability(cmd *TermDependant) string {
 
 // ExecBuiltin execute a builtin command.
 func ExecBuiltin(args []string) {
-	if len(args) <= 1 {
+	if len(args) <= 0 {
 		Panic("No parameters")
 	}
 
@@ -152,29 +153,29 @@ func ExecBuiltin(args []string) {
 		}
 		fmt.Println(strings.Join(args[1:], " "))
 	case "AskYN":
-		casted := make([]interface{}, len(args))
-		for i, v := range args {
-			casted[i] = v
-		}
-
-		if AskYN(casted[1:]...) {
+		if AskYN(strings.Join(args[1:], " ")) {
 			os.Exit(0)
 		}
 		os.Exit(1)
+	case "Read":
+		reader := bufio.NewReader(os.Stdin)
+		text, _ := reader.ReadString('\n')
+		fmt.Print(text)
+	case "ReadSecure":
+		fmt.Print(ReadSecure())
 	/*case "AskList":
-	        values := ""
-	        dflt := -1
+	values := ""
+	dflt := -1
 
-	        if len(args) >= 3 {
-	            values = args[2]
-	            if len(args) >= 4 {
-					if i, err := strconv.Atoi(args[3]); err == nil {
-						dflt = i
-					}
-	            }
-	        }
-
-	        os.Exit(AskList(strings.Split(values, ","), dflt, args[1]))*/
+	if len(args) >= 3 {
+		values = args[2]
+		if len(args) >= 4 {
+			if i, err := strconv.Atoi(args[3]); err == nil {
+				dflt = i
+			}
+		}
+	}
+	os.Exit(AskList(strings.Split(values, ","), dflt, args[1]))*/
 	case "Bell":
 		Bell()
 	}

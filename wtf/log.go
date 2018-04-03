@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -80,6 +82,32 @@ func Ask(question ...interface{}) string {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	return text
+}
+
+// AskSecure prints a question and return it's answer, hidden when typing.
+func ReadSecure() string {
+	// Command to read from the term
+	cmdWrapper, cmd := GetLangAndCommandTemplate(&TermDependant{
+		Bash: "read -s password; echo \"$password\"",
+		Powershell: "$password = Read-Host -AsSecureString; " +
+			"$password = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password); " +
+			"$password = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($password); " +
+			"echo $password",
+	})
+
+	// Read a secure response
+	process := exec.Command(cmdWrapper[0], cmdWrapper[1], cmd)
+
+	// Pipes
+	var output bytes.Buffer
+	process.Stdout = &output
+	process.Stdin = os.Stdin
+
+	// Run
+	if err := process.Run(); err != nil {
+		Panic("Failed to read secure password")
+	}
+	return output.String()
 }
 
 // AskYN prints a yes/no question and return it's answer.
