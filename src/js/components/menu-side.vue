@@ -15,11 +15,11 @@ export default {
 	data: () => ({
 		headings: [],
 		selected_index: null,
-		content_div: null,
 	}),
 	methods: {
 		listHeadings() {
-			let headings = this.content_div.querySelectorAll('h1,h2,h3,h4')
+			let content = document.querySelector('.content .container-fluid') 
+			let headings = content.querySelectorAll('h1,h2,h3,h4')
 			let res = []
 			
 			for (let i = 0, l = headings.length; i < l; i++) {
@@ -32,7 +32,7 @@ export default {
 			this.headings = res
 		},
 		onScroll() {
-			let top = this.content_div.scrollTop || document.body.scrollTop || document.documentElement.scrollTop
+			let top = document.body.scrollTop || document.documentElement.scrollTop
 			top += offset
 			
 			let headings = this.headings
@@ -59,12 +59,11 @@ export default {
 			}
 			
 			// Scroll to
-			this.content_div.scrollTop = document.body.scrollTop = document.documentElement.scrollTop = element.offsetTop - offset + 1
+			document.body.scrollTop = document.documentElement.scrollTop = element.offsetTop - offset + 1
 		}
 	},
 	mounted() {
-		this.content_div = document.querySelector('.content')
-		this.content_div.addEventListener('scroll', this.onScroll)
+		window.addEventListener('scroll', this.onScroll)
 		this.$router.afterEach((to, from) => {
 			setTimeout(() => {
 				this.listHeadings()
@@ -73,7 +72,7 @@ export default {
 		})
 	},
 	beforeDestroy() {
-		this.content_div.removeEventListener('scroll', this.onScroll)
+		window.removeEventListener('scroll', this.onScroll)
 		//TODO: remove afterEach
 	},
 }
