@@ -21,6 +21,7 @@ const md = MarkdownIt({
 
 // Wrapper
 md.wrapper = 'div'
+md.raw = true
 
 // Table class
 md.renderer.rules.table_open = () => '<table class="table table-striped">\n'

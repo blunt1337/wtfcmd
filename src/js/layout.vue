@@ -41,9 +41,9 @@ import MenuSide from './components/menu-side'
 export default {
 	data: () => ({
 		sidebar: false,
-		project_name: PROJECT_NAME,
-		project_user: PROJECT_USER,
-		project_description: PROJECT_DESCRIPTION
+		project_name: process.env.PROJECT_NAME,
+		project_user: process.env.PROJECT_USER,
+		project_description: process.env.PROJECT_DESCRIPTION
 	}),
 	components: {
 		MenuTop,
@@ -53,7 +53,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import "sass/index";
+@import "~@/sass/index";
 $sidebar_width: 300px;
 
 .body-wrapper {
@@ -130,9 +130,9 @@ $sidebar_width: 300px;
 	@include media-breakpoint-up(md) {
 		padding-top: 2em;
 		
-		width: auto; 
-		margin-left: $sidebar_width; 
-		padding-left: 2em; 
+		width: auto;
+		margin-left: $sidebar_width;
+		padding-left: 2em;
 	}
 }
 

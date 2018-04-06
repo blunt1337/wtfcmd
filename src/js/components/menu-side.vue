@@ -1,6 +1,6 @@
 <template>
 	<ul class="menu vertical">
-		<li :class="{ selected: selected_index === index }" v-for="(heading, index) of headings">
+		<li :class="{ selected: selected_index === index }" v-for="(heading, index) of headings" :key="heading.anchor">
 			<a :href="'#' + heading.anchor" @click.prevent="scrollTo(heading.element)">
 				<component :is="'h' + heading.size" class="text-truncate">{{ heading.text }}</component>
 			</a>
@@ -18,7 +18,7 @@ export default {
 	}),
 	methods: {
 		listHeadings() {
-			let content = document.querySelector('.content .container-fluid') 
+			let content = document.querySelector('.content .container-fluid')
 			let headings = content.querySelectorAll('h1,h2,h3,h4')
 			let res = []
 			
@@ -64,7 +64,7 @@ export default {
 	},
 	mounted() {
 		window.addEventListener('scroll', this.onScroll)
-		this.$router.afterEach((to, from) => {
+		this.$router.afterEach(() => {
 			setTimeout(() => {
 				this.listHeadings()
 				this.onScroll()

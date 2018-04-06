@@ -29,7 +29,7 @@ module.exports = {
 </script>
 
 <style lang="scss">
-@import "sass/variables";
+@import "~@/sass/variables";
 
 .modal.show {
 	display: block !important;

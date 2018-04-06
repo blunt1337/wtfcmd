@@ -96,7 +96,7 @@ and added an escaped configdir variable in the command.
 A complete documentation of the .wtfcmd file is available at http://wtf.blunt.sh/command_definition, and a documentation of the template format at http://wtf.blunt.sh/template.
 
 <script>
-import Banner from 'js/components/banner'
+import Banner from '@/assets/banner'
 import InstallWindows from './installs/windows'
 import InstallMac from './installs/mac'
 import InstallLinux from './installs/linux'

@@ -4,7 +4,7 @@
 		<li class="sidebar-opener"><img markup-inline @click="$emit('sidebar')" src="../../assets/menu.svg" height="1em"/></li>
 		
 		<!-- Pages -->
-		<li v-for="route in routes" :class="{ selected: $route.path === route.path }" v-if="route.name">			
+		<li v-for="route in routes" :class="{ selected: $route.path === route.path }" v-if="route.name" :key="route.path">
 			<router-link :to="route.path">{{ route.name }}</router-link>
 		</li>
 		
@@ -19,14 +19,14 @@ import routes from '../routes'
 export default {
 	data: () => ({
 		routes,
-		project_user: PROJECT_USER,
-		project_repo: PROJECT_REPO,
+		project_user: process.env.PROJECT_USER,
+		project_repo: process.env.PROJECT_REPO,
 	}),
 }
 </script>
 
 <style lang="scss">
-@import "sass/variables";
+@import "~@/sass/variables";
 
 .sidebar-opener {
 	@include media-breakpoint-up(md) {

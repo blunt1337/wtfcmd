@@ -2,14 +2,14 @@ const fs = require('fs')
 const page_dir = __dirname + '/../pages'
 
 // Convert a filename into a displayed name
-const displayify = name => name.replace(/^[0-9]+\-/, '').replace(/_/g, ' ')
+const displayify = name => name.replace(/^[0-9]+-/, '').replace(/_/g, ' ')
 
 // Convert a filename into an url
-const urlify = name => '/' + name.replace(/^[0-9]+\-/, '').replace(/-/g, ' ')
+const urlify = name => '/' + name.replace(/^[0-9]+-/, '').replace(/-/g, ' ')
 
 // Build the component import code
 const importCode = filename => {
-	let mod = JSON.stringify('pages/' + filename)
+	let mod = JSON.stringify('@/pages/' + filename)
 	return `() => {
 		setLoading(true)
 		return import(${mod}).then(res => {
@@ -19,14 +19,13 @@ const importCode = filename => {
 	}`
 }
 
-export default function (options) {
+export default function () {
 	return new Promise((resolve, reject) => {
 		// List files from page folder
 		fs.readdir(page_dir, (err, files) => {
 			if (err) return reject(err)
 			
 			let deps = []
-			let res = []
 			let routes = `
 				const loaderClasses = document.querySelector('.top-border .loading').classList
 				const setLoading = bool => loaderClasses.toggle('d-none', !bool)
