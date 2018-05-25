@@ -17,13 +17,13 @@
   cmd:
     bash: |
       set -e
-      find . -maxdepth 1 -type f -not -name 'CNAME' -not -name '.wtfcmd.yml' -delete
+      find . -maxdepth 1 -type f -not -name 'CNAME' -not -name '.wtfcmd.yml' -not -name 'LICENSE' -delete
       cd src
       NODE_ENV='production' node node_modules/webpack/bin/webpack.js --config webpack.config.js
       rm -f ../critical.js ../critical.css
     powershell: |
       $ErrorActionPreference = "Stop"
-      Remove-Item * -Exclude 'CNAME','.wtfcmd.yml','src','.git'
+      Remove-Item * -Exclude 'CNAME','.wtfcmd.yml','src','.git','LICENSE'
       cd src
       $Env:NODE_ENV = 'production'
       node node_modules/webpack/bin/webpack.js --config webpack.config.js
