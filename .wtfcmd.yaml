@@ -36,9 +36,11 @@
       {{- range .os}} && env GOOS={{esc .}} GOARCH={{esc $.arch}} go build -ldflags="-s -w" -o wtf.{{if eq . "windows"}}exe{{else}}{{.}}{{end}} blunt.sh/wtfcmd/wtf{{end}}
     powershell: |
       go run assetbuilder/build.go assets
-      $env:GOOS = {{esc .os}}
-      $env:GOARCH = {{esc .arch}}
-      go build -ldflags="-s -w" -o wtf.{{if eq .os "windows"}}exe{{else}}{{.os}}{{end}} blunt.sh/wtfcmd/wtf
+      {{- range .os}}
+          $env:GOOS = {{esc .}}
+          $env:GOARCH = {{esc $.arch}}
+          go build -ldflags="-s -w" -o wtf.{{if eq . "windows"}}exe{{else}}{{.}}{{end}} blunt.sh/wtfcmd/wtf
+      {{end}}
   desc: Build the command for any OS
 
 - group: [build, b]
