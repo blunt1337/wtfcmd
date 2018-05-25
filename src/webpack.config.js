@@ -117,7 +117,7 @@ cfg.module.rules.push({
 		{
 			loader: path.resolve(__dirname, 'node_modules/vue-markdown-loader/lib/markdown-compiler.js'),
 			options: require('./markdown.config.js'),
-		}
+		},
 	],
 })
 
