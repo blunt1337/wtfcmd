@@ -20,6 +20,7 @@ script:
   - env GOOS=windows GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.exe blunt.sh/wtfcmd/wtf
   - env GOOS=darwin GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.osx blunt.sh/wtfcmd/wtf
   - env GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o $GOPATH/bin/wtf.linux blunt.sh/wtfcmd/wtf
+  - env GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o $GOPATH/bin/wtf.linux-arm blunt.sh/wtfcmd/wtf
 
 deploy:
   provider: releases

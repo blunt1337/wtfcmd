@@ -55,3 +55,8 @@
   name: [linux, l]
   cmd: wtf build for-os linux
   desc: Build the command for linux
+
+- group: build
+  name: [linux-arm, la]
+  cmd: wtf build for-os linux --arch arm
+  desc: Build the command for linux with ARM architecture
