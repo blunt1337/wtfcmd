@@ -173,7 +173,7 @@ cfg.plugins.push(new webpack.DefinePlugin(defines))
 //-- Icons generation
 //-----------------------------
 const fs = require('fs')
-const logo_path = path.resolve(__dirname, 'src/logo.svg')
+const logo_path = path.resolve(__dirname, 'assets/logo.svg')
 if (fs.existsSync(logo_path)) {
 	const buildIcons = require('./build-icons')
 	const editSvg = svg => (svg + '').replace(/class="fill-primary"/g, 'style="fill:' + process.env.PROJECT_COLOR + '"')
