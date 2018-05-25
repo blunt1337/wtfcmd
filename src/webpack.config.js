@@ -184,8 +184,9 @@ if (fs.existsSync(logo_path)) {
 	// Build with watcher
 	cfg.plugins.push({
 		apply(compiler) {
-			compiler.plugin('watch-run', () => {
+			compiler.plugin('watch-run', (_, cb) => {
 				fs.watchFile(logo_path, () => buildIcons(logo_path, cfg.output.path, editSvg))
+				cb()
 			})
 		}
 	})
