@@ -74,12 +74,12 @@ For more complex cases, in the command you can use `cd {{configdir}}`.
 #### args
 arguments *(optional)* 
 
-Arguments must contain an array of [argument](#argument) objects defined like below.
+Arguments must contain an array of [argument](#arguments) objects defined like below.
 
 #### flags
 flags *(optional)*
 
-Flags must contain an array of [flag](#flag) objects defined like below.
+Flags must contain an array of [flag](#flags-2) objects defined like below.
 
 ---
 
