@@ -36,7 +36,7 @@ func GetTerminal() TermType {
 					mode |= 0x0004 // ENABLE_VIRTUAL_TERMINAL_PROCESSING
 					syscall.NewLazyDLL("kernel32.dll").NewProc("SetConsoleMode").Call(fd, uintptr(mode), 0)
 				}
-			} else if regexp.MustCompile("cygwin\\\\bin\\\\zsh.exe").Match(out) {
+			} else if regexp.MustCompile("cygwin\\\\bin\\\\").Match(out) {
 				term = TermBash
 			}
 		}
