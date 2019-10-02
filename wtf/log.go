@@ -84,7 +84,7 @@ func Ask(question ...interface{}) string {
 	return text
 }
 
-// AskSecure prints a question and return it's answer, hidden when typing.
+// ReadSecure prints a question and return it's answer, hidden when typing.
 func ReadSecure() string {
 	// Command to read from the term
 	cmdWrapper, cmd := GetLangAndCommandTemplate(&TermDependant{
@@ -113,21 +113,21 @@ func ReadSecure() string {
 // AskYN prints a yes/no question and return it's answer.
 // If the last parameter is either "yes"/"y"/true or "no"/"n"/false, then it is treated as the default answer.
 // So parameter are "question0 question1 ... optional_default_value.
-func AskYN(question_and_default ...interface{}) bool {
+func AskYN(questionAndFefault ...interface{}) bool {
 	var hasDefault bool
 	var dflt bool
 
 	// Get the last param if it's the default value
-	last := len(question_and_default) - 1
-	switch question_and_default[last] {
+	last := len(questionAndFefault) - 1
+	switch questionAndFefault[last] {
 	case "yes", "true", true:
 		hasDefault = true
 		dflt = true
-		question_and_default = question_and_default[:last]
+		questionAndFefault = questionAndFefault[:last]
 	case "no", "false", false:
 		hasDefault = true
 		dflt = false
-		question_and_default = question_and_default[:last]
+		questionAndFefault = questionAndFefault[:last]
 	}
 
 	// Show the question
@@ -136,7 +136,7 @@ func AskYN(question_and_default ...interface{}) bool {
 	} else {
 		fmt.Print("\033[38;5;99;01m[?]\033[00m ")
 	}
-	fmt.Print(question_and_default...)
+	fmt.Print(questionAndFefault...)
 
 	// Print the default
 	if hasDefault {
@@ -182,24 +182,24 @@ func AskYN(question_and_default ...interface{}) bool {
 // If the last or before last parameter must be a string[], it is treated as the answer list.
 // If the last parameter is an integer, then it is treated as the default answer index.
 // So parameter are "question0 question1 ... answers_array optional_default_index.
-func AskList(question_and_answers_and_default ...interface{}) int {
+func AskList(questionAndAnswersAndDefault ...interface{}) int {
 	var hasDefault bool
 	var dflt int
 	var answers []string
 
 	// Get the last param if it's the default value
-	last := len(question_and_answers_and_default) - 1
-	if i, ok := question_and_answers_and_default[last].(int); ok {
+	last := len(questionAndAnswersAndDefault) - 1
+	if i, ok := questionAndAnswersAndDefault[last].(int); ok {
 		hasDefault = true
 		dflt = i
-		question_and_answers_and_default = question_and_answers_and_default[:last]
+		questionAndAnswersAndDefault = questionAndAnswersAndDefault[:last]
 		last--
 	}
 
 	// List of answers
-	if arr, ok := question_and_answers_and_default[last].([]string); ok && len(arr) != 0 {
+	if arr, ok := questionAndAnswersAndDefault[last].([]string); ok && len(arr) != 0 {
 		answers = arr
-		question_and_answers_and_default = question_and_answers_and_default[:last]
+		questionAndAnswersAndDefault = questionAndAnswersAndDefault[:last]
 	} else {
 		Warn("No choices available")
 		return -1
@@ -211,7 +211,7 @@ func AskList(question_and_answers_and_default ...interface{}) int {
 	} else {
 		fmt.Print("\033[38;5;99;01m[?]\033[00m ")
 	}
-	fmt.Println(question_and_answers_and_default...)
+	fmt.Println(questionAndAnswersAndDefault...)
 
 	// Check for default
 	max := len(answers)
@@ -271,30 +271,30 @@ func Jsonp(objs ...interface{}) {
 
 // Loading prints a loading bar with a small message.
 // Last parameter must be: 0 to 1.
-func Loading(msg_and_percent ...interface{}) {
+func Loading(msgAndPercent ...interface{}) {
 	var percent float32
 
 	// Get percent parameter
-	last := len(msg_and_percent) - 1
-	switch value := msg_and_percent[last].(type) {
+	last := len(msgAndPercent) - 1
+	switch value := msgAndPercent[last].(type) {
 	case float64:
 		percent = float32(value)
-		msg_and_percent = msg_and_percent[:last]
+		msgAndPercent = msgAndPercent[:last]
 	case float32:
 		percent = value
-		msg_and_percent = msg_and_percent[:last]
+		msgAndPercent = msgAndPercent[:last]
 	case int:
 		percent = float32(value)
-		msg_and_percent = msg_and_percent[:last]
+		msgAndPercent = msgAndPercent[:last]
 	case string:
 		if f, err := strconv.ParseFloat(value, 32); err == nil && f >= 0 && f <= 1 {
 			percent = float32(f)
-			msg_and_percent = msg_and_percent[:last]
+			msgAndPercent = msgAndPercent[:last]
 		}
 	}
 
 	// Fix the message to 75 chars
-	msg := fmt.Sprint(msg_and_percent...)
+	msg := fmt.Sprint(msgAndPercent...)
 	msg = regexp.MustCompile("[\r\n]+").ReplaceAllString(msg, " ")
 
 	if len(msg) > 75 {

@@ -373,9 +373,8 @@ func uninstallAutocomplete() {
 			if os.IsNotExist(err) {
 				Made("No autocomplete installed")
 				return
-			} else {
-				Panic(err)
 			}
+			Panic(err)
 		} else {
 			content := string(data)
 
@@ -406,9 +405,8 @@ func uninstallAutocomplete() {
 			if os.IsNotExist(err) {
 				Made("No autocomplete installed")
 				return
-			} else {
-				Panic(err)
 			}
+			Panic(err)
 		} else {
 			content := string(data)
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -12,8 +13,11 @@ import (
 type TermType int
 
 const (
+	// TermCmd is a cmd.exe terminal
 	TermCmd TermType = iota
+	// TermPowershell is a powershell.exe terminal
 	TermPowershell
+	// TermBash is a bash terminal
 	TermBash
 )
 
@@ -43,27 +47,6 @@ func GetLangAndCommandTemplate(cmd *TermDependant) ([]string, string) {
 			Panic("error: this command is not implemented on windows")
 		}
 	}
-	/*case TermPowershell:
-		if cmd.Powershell != "" {
-			cmdWrapper = []string{"powershell.exe", "-command"}
-			cmdTpl = cmd.Powershell
-		} else if cmd.Cmd != "" {
-			cmdWrapper = []string{"cmd.exe", "/C"}
-			cmdTpl = cmd.Cmd
-		} else {
-			Panic("error: this command is not implemented on windows")
-		}
-	case TermCmd:
-		if cmd.Cmd != "" {
-			cmdWrapper = []string{"cmd.exe", "/C"}
-			cmdTpl = cmd.Cmd
-		} else if cmd.Powershell != "" {
-			cmdWrapper = []string{"powershell.exe", "-command"}
-			cmdTpl = cmd.Powershell
-		} else {
-			Panic("error: this command is not implemented on windows")
-		}
-	}*/
 	return cmdWrapper, cmdTpl
 }
 
@@ -114,18 +97,6 @@ func CmdAvailability(cmd *TermDependant) string {
 			return red + " (bash only)" + reset
 		}
 	}
-	/*case TermPowershell:
-		if cmd.Powershell == "" && cmd.Cmd == "" {
-			return red + " (bash only)" + reset
-		}
-	case TermCmd:
-		if cmd.Cmd == "" {
-			if cmd.Powershell == "" {
-				return red + " (bash only)" + reset
-			}
-			return red + " (powershell preferably)" + reset
-		}
-	}*/
 	return ""
 }
 
@@ -163,19 +134,19 @@ func ExecBuiltin(args []string) {
 		fmt.Print(text)
 	case "ReadSecure":
 		fmt.Print(ReadSecure())
-	/*case "AskList":
-	values := ""
-	dflt := -1
+	case "AskList":
+		values := ""
+		dflt := -1
 
-	if len(args) >= 3 {
-		values = args[2]
-		if len(args) >= 4 {
-			if i, err := strconv.Atoi(args[3]); err == nil {
-				dflt = i
+		if len(args) >= 3 {
+			values = args[2]
+			if len(args) >= 4 {
+				if i, err := strconv.Atoi(args[3]); err == nil {
+					dflt = i
+				}
 			}
 		}
-	}
-	os.Exit(AskList(strings.Split(values, ","), dflt, args[1]))*/
+		os.Exit(AskList(strings.Split(values, ","), dflt, args[1]))
 	case "Bell":
 		Bell()
 	}

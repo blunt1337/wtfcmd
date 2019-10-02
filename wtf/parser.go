@@ -367,7 +367,7 @@ func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 					case int, int32, int64, float64, float32, string, bool:
 						res.Default = value
 					default:
-						return nil, fmt.Errorf(".default[%s] : must be a number, a string or a boolean", index)
+						return nil, fmt.Errorf(".default[%d] : must be a number, a string or a boolean", index)
 					}
 				}
 			case int, int32, int64, float64, float32, bool, string:

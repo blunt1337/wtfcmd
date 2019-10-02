@@ -75,18 +75,18 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 
 // ResolveCwd finds where the current working dir will be
 func ResolveCwd(cfg *Config) string {
-	var to_resolve string
+	var toResolve string
 	if cfg.Cwd == nil {
-		to_resolve = ""
+		toResolve = ""
 	} else {
 		switch term {
 		case TermBash:
-			to_resolve = cfg.Cwd.Bash
+			toResolve = cfg.Cwd.Bash
 		case TermCmd, TermPowershell:
-			to_resolve = cfg.Cwd.Powershell
+			toResolve = cfg.Cwd.Powershell
 		}
 	}
-	lg := len(to_resolve)
+	lg := len(toResolve)
 
 	// Current working dir
 	var cwd string
@@ -100,25 +100,25 @@ func ResolveCwd(cfg *Config) string {
 		return cwd
 	}
 
-	// Starting with dot: config dir + to_resolve
-	if to_resolve[0] == '.' {
-		return path.Join(filepath.Dir(cfg.File), to_resolve)
+	// Starting with dot: config dir + toResolve
+	if toResolve[0] == '.' {
+		return path.Join(filepath.Dir(cfg.File), toResolve)
 	}
 
 	// Starting with / or x:/ absolute path
 	switch term {
 	case TermBash:
-		if to_resolve[0] == '/' {
-			return to_resolve
+		if toResolve[0] == '/' {
+			return toResolve
 		}
 	case TermCmd, TermPowershell:
-		if lg >= 3 && to_resolve[1] == ':' && (to_resolve[1] == '/' || to_resolve[1] == '\\') {
-			return to_resolve
+		if lg >= 3 && toResolve[1] == ':' && (toResolve[1] == '/' || toResolve[1] == '\\') {
+			return toResolve
 		}
 	}
 
-	// Default: cwd + to_resolve
-	return path.Join(cwd, to_resolve)
+	// Default: cwd + toResolve
+	return path.Join(cwd, toResolve)
 }
 
 // getTplFuncs creates a big funcMap with all strings functions and more for the template.
@@ -183,8 +183,8 @@ func getTplFuncs(config *Config) template.FuncMap {
 
 			pretty := false
 			if len(arg_and_pretty) == 2 {
-				if arg_pretty, ok := arg_and_pretty[1].(bool); ok && arg_pretty {
-					pretty = arg_pretty
+				if argPretty, ok := arg_and_pretty[1].(bool); ok && argPretty {
+					pretty = argPretty
 				}
 			}
 
