@@ -285,6 +285,13 @@ func parseFlag(group *Group, command *Command, name string, value string, hasVal
 			return flag.Name[0], value, nextValueUsed, flag.IsArray
 		}
 	}
+
+	// Flag not found = --help or -h or -H or -?
+	if strings.ToLower(name) == "help" || name == "H" || name == "h" || name == "?" {
+		ShowHelpCommand(group, command)
+		os.Exit(0)
+	}
+
 	ShowCommandError(fmt.Sprintf("flag %s not found", name), group, command, nil)
 	return "", "", false, false
 }
