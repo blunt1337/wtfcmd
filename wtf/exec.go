@@ -46,7 +46,9 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	}
 
 	// Create the process
-	process := exec.Command(cmdWrapper[0], cmdWrapper[1], cmd)
+	cmdWrapper0, cmdWrapperN := cmdWrapper[0], cmdWrapper[1:]
+	cmdWrapperN = append(cmdWrapperN, cmd)
+	process := exec.Command(cmdWrapper0, cmdWrapperN...)
 
 	// Pipes
 	process.Stdout = os.Stdout
@@ -79,7 +81,7 @@ func ResolveCwd(cfg *Config) string {
 	if cfg.Cwd == nil {
 		toResolve = ""
 	} else {
-		switch term {
+		switch GetTerminal() {
 		case TermBash:
 			toResolve = cfg.Cwd.Bash
 		case TermCmd, TermPowershell:
@@ -106,7 +108,7 @@ func ResolveCwd(cfg *Config) string {
 	}
 
 	// Starting with / or x:/ absolute path
-	switch term {
+	switch GetTerminal() {
 	case TermBash:
 		if toResolve[0] == '/' {
 			return toResolve
@@ -243,9 +245,9 @@ func getTplFuncs(config *Config) template.FuncMap {
 		"readSecure": func() string {
 			return os.Args[0] + " --builtin ReadSecure ."
 		},
-		/*"AskList": func (args... interface{}) string {
+		"AskList": func(args ...interface{}) string {
 			return os.Args[0] + " --builtin AskList " + join(args)
-		},*/
+		},
 		"bell": func() string {
 			return os.Args[0] + " --builtin Bell ."
 		},

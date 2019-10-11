@@ -27,22 +27,39 @@ func GetLangAndCommandTemplate(cmd *TermDependant) ([]string, string) {
 	var cmdWrapper []string
 	var cmdTpl string
 
-	switch term {
+	switch GetTerminal() {
 	case TermBash:
 		if cmd.Bash != "" {
-			if runtime.GOOS == "windows" {
-				cmdWrapper = []string{"bash", "-c"}
-			} else {
-				cmdWrapper = []string{"/bin/bash", "-c"}
-			}
 			cmdTpl = cmd.Bash
+
+			if runtime.GOOS == "windows" {
+				if GetTerminalHasWSL() {
+					// WSL
+					cmdWrapper = []string{"wsl.exe", "/bin/sh", "-c"}
+				} else {
+					// Cygwin
+					cmdWrapper = []string{"bash2", "-c"}
+				}
+			} else {
+				// Default bash
+				cmdWrapper = []string{"/bin/sh", "-c"}
+			}
+		} else if GetTerminalHasWSL() && cmd.Powershell != "" {
+			// WSL
+			cmdWrapper = []string{"powershell.exe", "-command"}
+			cmdTpl = cmd.Powershell
 		} else {
 			Panic("error: this command is not implemented in bash")
 		}
 	case TermPowershell, TermCmd:
 		if cmd.Powershell != "" {
+			// Powershell
 			cmdWrapper = []string{"powershell.exe", "-command"}
 			cmdTpl = cmd.Powershell
+		} else if GetTerminalHasWSL() && cmd.Bash != "" {
+			// WSL
+			cmdWrapper = []string{"wsl.exe", "/bin/sh", "-c"}
+			cmdTpl = cmd.Bash
 		} else {
 			Panic("error: this command is not implemented on windows")
 		}
@@ -56,7 +73,7 @@ func EscapeArg(param interface{}) interface{} {
 		param = ""
 	}
 	if str, ok := param.(string); ok {
-		switch term {
+		switch GetTerminal() {
 		case TermBash:
 			return "'" + strings.Replace(str, "'", "'\\''", -1) + "'"
 		case TermPowershell:
@@ -71,7 +88,7 @@ func UnescapeArg(param interface{}) interface{} {
 	if str, ok := param.(string); ok {
 		end := len(str) - 1
 
-		switch term {
+		switch GetTerminal() {
 		case TermBash:
 			if str[0] == '\'' && str[end] == '\'' {
 				return strings.Replace(str[1:end], "'\\''", "'", -1)
@@ -87,13 +104,19 @@ func UnescapeArg(param interface{}) interface{} {
 
 // CmdAvailability returns a message if the command is not available on the OS.
 func CmdAvailability(cmd *TermDependant) string {
-	switch term {
+	switch GetTerminal() {
 	case TermBash:
 		if cmd.Bash == "" {
+			if GetTerminalHasWSL() && cmd.Powershell != "" {
+				return orange + " (windows wsl)" + reset
+			}
 			return red + " (windows only)" + reset
 		}
 	case TermCmd, TermPowershell:
 		if cmd.Powershell == "" {
+			if GetTerminalHasWSL() && cmd.Bash != "" {
+				return orange + " (bash wsl)" + reset
+			}
 			return red + " (bash only)" + reset
 		}
 	}

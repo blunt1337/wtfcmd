@@ -14,9 +14,11 @@ import (
 var term TermType
 var termIsFilled = false
 
-// GetTerminal returns the type of the terminal running our program.
+// GetTerminal returns the type of the terminal running our program
 func GetTerminal() TermType {
 	if !termIsFilled {
+		termIsFilled = true
+
 		// Default
 		term = TermCmd
 
@@ -38,10 +40,29 @@ func GetTerminal() TermType {
 				}
 			} else if regexp.MustCompile("cygwin\\\\bin\\\\").Match(out) {
 				term = TermBash
+			} else if regexp.MustCompile("\\\\wsl\\.exe").Match(out) {
+				hasWSL = true
+				hasWSLIsFilled = true
+				term = TermBash
 			}
 		}
 	}
 
-	termIsFilled = true
 	return term
+}
+
+var hasWSL bool
+var hasWSLIsFilled = false
+
+// GetTerminalHasWSL returns true if wsl is available.
+func GetTerminalHasWSL() bool {
+	if !hasWSLIsFilled {
+		hasWSLIsFilled = true
+
+		// WSL binary exists
+		_, err := exec.LookPath("wsl.exe")
+		hasWSL = err == nil
+	}
+
+	return hasWSL
 }

@@ -49,12 +49,6 @@ func echo(value interface{}, t *testing.T) {
 		command := &Command{"command", []string{"cmd"}, config}
 		group := &Group{"group", []string{"g"}, []*Command{command}}
 
-		if runtime.GOOS == "windows" {
-			term = TermPowershell
-		} else {
-			term = TermBash
-		}
-
 		ExecCmd(group, command, params, false)
 		return
 	}

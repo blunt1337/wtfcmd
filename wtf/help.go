@@ -17,12 +17,16 @@ var reset = ""
 // Red character code.
 var red = ""
 
+// Orange character code.
+var orange = ""
+
 // Fill bold/reset/red if the terminal can handle colors.
 func init() {
 	if os.Getenv("TERM") != "dumb" && GetTerminal() != TermCmd {
 		bold = "\033[01m"
 		reset = "\033[00m"
 		red = "\033[91m"
+		orange = "\033[33m"
 	}
 }
 
@@ -209,7 +213,7 @@ func ShowHelpCommand(group *Group, command *Command) {
 		"hasPrefix":    strings.HasPrefix,
 		"trimLeft":     strings.TrimLeft,
 		"cwd": func(cfg *Config) string {
-			switch term {
+			switch GetTerminal() {
 			case TermBash:
 				return cfg.Cwd.Bash + " => " + ResolveCwd(cfg)
 			case TermCmd, TermPowershell:
