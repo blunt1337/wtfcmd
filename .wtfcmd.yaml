@@ -29,7 +29,7 @@
   flags:
     - name: arch
       desc: for which architecture to build
-      default: 386
+      default: amd64
   cmd:
     bash: |
       go run assetbuilder/build.go $(pwd)/assets
