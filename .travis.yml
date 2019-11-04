@@ -1,6 +1,6 @@
 language: go
 go_import_path: blunt.sh/wtfcmd
-go: 1.8
+go: master
 install:
   - go get github.com/mattn/go-isatty
   - go get gopkg.in/yaml.v2
