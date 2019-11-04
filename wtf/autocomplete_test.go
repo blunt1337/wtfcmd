@@ -71,5 +71,5 @@ func ExampleAutocomplete1() {
 	// [+] autocomplete []
 	// [+] autocomplete [build format install test]
 	// [+] autocomplete [build format install test]
-	// [+] autocomplete [for-os linux osx windows]
+	// [+] autocomplete [for-os linux linux-arm osx windows]
 }

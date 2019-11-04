@@ -38,7 +38,7 @@ func GetLangAndCommandTemplate(cmd *TermDependant) ([]string, string) {
 					cmdWrapper = []string{"wsl.exe", "/bin/sh", "-c"}
 				} else {
 					// Cygwin
-					cmdWrapper = []string{"bash2", "-c"}
+					cmdWrapper = []string{"bash", "-c"}
 				}
 			} else {
 				// Default bash
@@ -76,7 +76,7 @@ func EscapeArg(param interface{}) interface{} {
 		switch GetTerminal() {
 		case TermBash:
 			return "'" + strings.Replace(str, "'", "'\\''", -1) + "'"
-		case TermPowershell:
+		case TermCmd, TermPowershell:
 			return "'" + strings.Replace(str, "'", "''", -1) + "'"
 		}
 	}
@@ -93,7 +93,7 @@ func UnescapeArg(param interface{}) interface{} {
 			if str[0] == '\'' && str[end] == '\'' {
 				return strings.Replace(str[1:end], "'\\''", "'", -1)
 			}
-		case TermPowershell:
+		case TermCmd, TermPowershell:
 			if str[0] == '\'' && str[end] == '\'' {
 				return strings.Replace(str[1:end], "''", "'", -1)
 			}

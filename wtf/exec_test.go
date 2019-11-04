@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -38,7 +37,7 @@ func echo(value interface{}, t *testing.T) {
 			"test": value,
 		}
 		cmdTpl := &TermDependant{
-			Bash:       "function _test {\necho \"$1\"\n}\n_test {{esc .test}}",
+			Bash:       "_test() {\necho \"$1\"\n}\n_test {{esc .test}}",
 			Powershell: "function _test { echo $args[0] } _test {{esc .test}}",
 		}
 		cwd := &TermDependant{

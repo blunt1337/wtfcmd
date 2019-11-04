@@ -24,20 +24,16 @@ func GetTerminalHasWSL() bool {
 		utsname := syscall.Utsname{}
 		syscall.Uname(&utsname)
 
-		release := int8ToString(utsname.Release)
+		b := make([]byte, len(utsname.Release))
+		for i, v := range utsname.Release {
+			b[i] = byte(v)
+		}
+
+		release := string(b)
 		release = strings.ToLower(release)
 
 		hasWSL = strings.Contains(release, "microsoft")
 	}
 
 	return hasWSL
-}
-
-// int8ToString simply converts int8 array to string
-func int8ToString(array [65]int8) string {
-	b := make([]byte, len(array))
-	for i, v := range array {
-		b[i] = byte(v)
-	}
-	return string(b)
 }
