@@ -16,14 +16,14 @@ import (
 // ExecCmd run the command as a child process.
 // Use command.Cmd template and params to build the command.
 // Execute it in bash / powershell depending on the os.
-func ExecCmd(group *Group, command *Command, params map[string]interface{}, debug bool) {
+func ExecCmd(group *Group, command *Command, params map[string]interface{}, debug bool, stdout *os.File) {
 	config := command.Config
 
 	// Get the right command
 	cmdWrapper, cmdTpl := GetLangAndCommandTemplate(config.Cmd)
 
 	// Generate the command from the template
-	tmpl, err := template.New("cmd").Funcs(getTplFuncs(command.Config)).Parse(cmdTpl)
+	tmpl, err := template.New("cmd").Funcs(getTplFuncs(config)).Parse(cmdTpl)
 	if err != nil {
 		Panic(fmt.Sprintf("Error in %s: The template for the command %s %s cannot be compiled: %s", config.File, group.Name, command.Name, err.Error()))
 	}
@@ -49,30 +49,57 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	cmdWrapper0, cmdWrapperN := cmdWrapper[0], cmdWrapper[1:]
 	cmdWrapperN = append(cmdWrapperN, cmd)
 	process := exec.Command(cmdWrapper0, cmdWrapperN...)
+	process.Dir = ResolveCwd(command.Config)
 
 	// Pipes
-	process.Stdout = os.Stdout
-	process.Stderr = os.Stderr
-	process.Stdin = os.Stdin
-	process.Dir = ResolveCwd(command.Config)
+	if stdout != nil {
+		process.Stdout = stdout
+		process.Stderr = os.Stderr
+		process.Stdin = os.Stdin
+	} else {
+		// "Expect" watch output to run code to output inside the input
+		process.Stdout, process.Stderr, process.Stdin, err = expectPipes(process, command.Config.Expect, func(index int, stdout *os.File) {
+			// Clone arguments
+			config2 := Config{
+				File:  config.File,
+				Cmd:   command.Config.Expect[index].Cmd,
+				Args:  config.Args,
+				Flags: config.Flags,
+				Cwd:   config.Cwd,
+			}
+			group2 := Group{Name: group.Name + " " + command.Name}
+			command2 := Command{Name: fmt.Sprintf("expect[%d]", index), Config: &config2}
+
+			// Execute
+			ExecCmd(&group2, &command2, params, debug, stdout)
+		})
+		if err != nil {
+			Panic(err.Error())
+		}
+	}
 
 	// Start
 	if err := process.Start(); err != nil {
 		Panic(err.Error())
 	}
 
-	// Wait for the end
-	if err := process.Wait(); err != nil {
-		// The program has exited with an exit code != 0
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				os.Exit(status.ExitStatus())
+	// Normal mode
+	if stdout == nil {
+		// Wait for the end
+		if err := process.Wait(); err != nil {
+			// The program has exited with an exit code != 0
+			if exiterr, ok := err.(*exec.ExitError); ok {
+				if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+					os.Exit(status.ExitStatus())
+				}
+			} else {
+				Panic(err.Error())
 			}
-		} else {
-			Panic(err.Error())
 		}
+		os.Exit(0)
+	} else {
+		process.Wait()
 	}
-	os.Exit(0)
 }
 
 // ResolveCwd finds where the current working dir will be

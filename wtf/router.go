@@ -132,7 +132,7 @@ func parseAndExecuteCommand(group *Group, command *Command, args []string, debug
 	}
 
 	// Execute the command
-	ExecCmd(group, command, params, debug)
+	ExecCmd(group, command, params, debug, nil)
 }
 
 // parseParams parses/checks a command's arguments and build a parameter map.

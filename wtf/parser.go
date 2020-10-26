@@ -23,6 +23,7 @@ type Config struct {
 	Args             []*ArgOrFlag
 	Flags            []*ArgOrFlag
 	Cwd              *TermDependant
+	Expect           []*Expect
 	internalFunction func(map[string]interface{}, func(...interface{}) string) error `yaml:"-" json:"-"`
 }
 
@@ -41,6 +42,14 @@ type TermDependant struct {
 	Bash       string
 	Powershell string
 	// Cmd string
+}
+
+// Expect holds the configuration for automatic response.
+type Expect struct {
+	Output string
+	Send   string
+	Runs   int
+	Cmd    *TermDependant
 }
 
 var nameRegex = regexp.MustCompile("^[\\p{L}0-9][\\p{L}0-9:._-]*$")
@@ -136,6 +145,12 @@ func parseConfig(data interface{}) (*Config, error) {
 					res.Args = value
 				case "flags":
 					res.Flags = value
+				}
+			case "expect":
+				var err error
+				res.Expect, err = parseExpectArray(v)
+				if err != nil {
+					return nil, fmt.Errorf(".%s%s", k, err.Error())
 				}
 			default:
 				return nil, fmt.Errorf(".%s : unknown property", k)
@@ -401,6 +416,75 @@ func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 					res.Default = ""
 				}
 			}
+		}
+
+		return res, nil
+	}
+	return nil, errors.New(" : must be an object")
+}
+
+// parseExpectArray checks and parses array of expects from the json interface.
+func parseExpectArray(data interface{}) ([]*Expect, error) {
+	switch value := data.(type) {
+	case []interface{}:
+		res := []*Expect{}
+		for i, v := range value {
+			// Parse expect
+			subvalue, err := parseExpect(v)
+			if err != nil {
+				return nil, fmt.Errorf("[%d]%s", i, err.Error())
+			}
+			res = append(res, subvalue)
+		}
+
+		return res, nil
+	default:
+		return nil, errors.New(" : must be a array of objects")
+	}
+}
+
+// parseExpect checks and parses expect from the json struct.
+func parseExpect(jsonInterface interface{}) (*Expect, error) {
+	// Assertion of object
+	if data, ok := jsonInterface.(map[string]interface{}); ok {
+		res := new(Expect)
+		res.Runs = -1
+
+		// Foreach key => value
+		for k, v := range data {
+			switch k {
+			case "output", "send":
+				value, err := parseStringArray(v)
+				if err != nil {
+					return nil, fmt.Errorf(".%s%s", k, err.Error())
+				}
+
+				switch k {
+				case "output":
+					res.Output = strings.Join(value, "\n")
+				case "send":
+					res.Send = strings.Join(value, "\n")
+				}
+			case "runs":
+				if subvalue, ok := v.(int); ok {
+					res.Runs = subvalue
+				} else {
+					return nil, fmt.Errorf(".%s : must be an integer", k)
+				}
+			case "cmd":
+				value, err := parseTermDependant(v, "\n")
+				if err != nil {
+					return nil, fmt.Errorf(".%s%s", k, err.Error())
+				}
+				res.Cmd = value
+			default:
+				return nil, fmt.Errorf(".%s : unknown property", k)
+			}
+		}
+
+		// Output required
+		if len(res.Output) == 0 {
+			return nil, errors.New(".output : is required")
 		}
 
 		return res, nil
