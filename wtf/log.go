@@ -84,6 +84,19 @@ func Ask(question ...interface{}) string {
 	return text
 }
 
+// AskSecure prints a question and return it's answer.
+func AskSecure(question ...interface{}) string {
+	if noColor {
+		fmt.Print("[?] ")
+	} else {
+		fmt.Print("\033[38;5;99;01m[?]\033[00m ")
+	}
+	fmt.Println(question...)
+
+	// Read response
+	return ReadSecure()
+}
+
 // ReadSecure prints a question and return it's answer, hidden when typing.
 func ReadSecure() string {
 	// Command to read from the term

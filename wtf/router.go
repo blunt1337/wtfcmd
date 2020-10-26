@@ -40,6 +40,10 @@ func Route(groups []*Group) {
 		AutocompleteCall(groups, args[2:])
 	case "--builtin":
 		ExecBuiltin(args[2:])
+	case "--vault":
+		// Replace commands
+		groups = GetVaultCommands()
+		args = args[1:]
 	default:
 		args = args[1:]
 	}
@@ -116,6 +120,16 @@ func findCommand(group *Group, name string) *Command {
 func parseAndExecuteCommand(group *Group, command *Command, args []string, debug bool) {
 	// Parse the parameters from flags/args
 	params := parseParams(group, command, args)
+
+	// Internal function
+	if command.Config.internalFunction != nil {
+		err := command.Config.internalFunction(params, AskSecure)
+		if err != nil {
+			Error(err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
 
 	// Execute the command
 	ExecCmd(group, command, params, debug)

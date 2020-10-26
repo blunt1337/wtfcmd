@@ -5,23 +5,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Config is the first level of the json.
 type Config struct {
-	File  string
-	Group []string
-	Name  []string
-	Cmd   *TermDependant
-	Desc  string
-	Args  []*ArgOrFlag
-	Flags []*ArgOrFlag
-	Cwd   *TermDependant
+	File             string
+	Group            []string
+	Name             []string
+	Cmd              *TermDependant
+	Desc             string
+	Args             []*ArgOrFlag
+	Flags            []*ArgOrFlag
+	Cwd              *TermDependant
+	internalFunction func(map[string]interface{}, func(...interface{}) string) error `yaml:"-" json:"-"`
 }
 
 // ArgOrFlag holds an arguments or flags from the config.

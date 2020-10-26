@@ -104,6 +104,10 @@ func UnescapeArg(param interface{}) interface{} {
 
 // CmdAvailability returns a message if the command is not available on the OS.
 func CmdAvailability(cmd *TermDependant) string {
+	if cmd == nil {
+		return ""
+	}
+
 	switch GetTerminal() {
 	case TermBash:
 		if cmd.Bash == "" {
