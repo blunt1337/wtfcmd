@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -16,7 +18,7 @@ import (
 // ExecCmd run the command as a child process.
 // Use command.Cmd template and params to build the command.
 // Execute it in bash / powershell depending on the os.
-func ExecCmd(group *Group, command *Command, params map[string]interface{}, debug bool, stdout *os.File) {
+func ExecCmd(group *Group, command *Command, params map[string]interface{}, debug bool, stdout io.Writer) {
 	config := command.Config
 
 	// Get the right command
@@ -52,27 +54,24 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	process.Dir = ResolveCwd(command.Config)
 
 	// Pipes
-	if stdout != nil {
-		process.Stdout = stdout
+	if stdout != nil || len(command.Config.Expect) == 0 {
+		if stdout != nil {
+			process.Stdout = stdout
+		} else {
+			process.Stdout = os.Stdout
+		}
 		process.Stderr = os.Stderr
 		process.Stdin = os.Stdin
 	} else {
-		// "Expect" watch output to run code to output inside the input
-		process.Stdout, process.Stderr, process.Stdin, err = expectPipes(process, command.Config.Expect, func(index int, stdout *os.File) {
-			// Clone arguments
-			config2 := Config{
-				File:  config.File,
-				Cmd:   command.Config.Expect[index].Cmd,
-				Args:  config.Args,
-				Flags: config.Flags,
-				Cwd:   config.Cwd,
+		// Run every expects
+		for i, exp := range command.Config.Expect {
+			if exp.Cmd != nil {
+				exp.Send += ExecExpectCmd(i, group, command, params, debug)
 			}
-			group2 := Group{Name: group.Name + " " + command.Name}
-			command2 := Command{Name: fmt.Sprintf("expect[%d]", index), Config: &config2}
+		}
 
-			// Execute
-			ExecCmd(&group2, &command2, params, debug, stdout)
-		})
+		// "Expect" watch "output" to send input code
+		process.Stdout, process.Stderr, process.Stdin, err = expectPipes(process, command.Config.Expect)
 		if err != nil {
 			Panic(err.Error())
 		}
@@ -100,6 +99,28 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	} else {
 		process.Wait()
 	}
+}
+
+// ExecExpectCmd executes the "expect" command and return the value.
+func ExecExpectCmd(index int, group *Group, command *Command, params map[string]interface{}, debug bool) string {
+	config := command.Config
+
+	// Clone arguments
+	config2 := Config{
+		File:  config.File,
+		Cmd:   command.Config.Expect[index].Cmd,
+		Args:  config.Args,
+		Flags: config.Flags,
+		Cwd:   config.Cwd,
+	}
+	group2 := Group{Name: group.Name + " " + command.Name}
+	command2 := Command{Name: fmt.Sprintf("expect[%d]", index), Config: &config2}
+
+	// Execute
+	var stdout bytes.Buffer
+	ExecCmd(&group2, &command2, params, debug, bufio.NewWriter(&stdout))
+
+	return stdout.String()
 }
 
 // ResolveCwd finds where the current working dir will be

@@ -13,12 +13,11 @@ type ExpectStream struct {
 	input   *os.File
 	process *exec.Cmd
 	expects []*Expect
-	execCmd func(index int, stdout *os.File)
 }
 
 func (w *ExpectStream) Write(p []byte) (int, error) {
 	text := string(p)
-	for i, e := range w.expects {
+	for _, e := range w.expects {
 		if e.Runs != 0 && strings.Contains(text, e.Output) {
 			if e.Runs > 0 {
 				e.Runs--
@@ -27,15 +26,12 @@ func (w *ExpectStream) Write(p []byte) (int, error) {
 			if len(e.Send) != 0 {
 				w.input.Write([]byte(e.Send))
 			}
-			if e.Cmd != nil {
-				w.execCmd(i, w.input)
-			}
 		}
 	}
 	return w.output.Write(p)
 }
 
-func expectPipes(process *exec.Cmd, expects []*Expect, execCmd func(index int, stdout *os.File)) (*ExpectStream, *ExpectStream, *os.File, error) {
+func expectPipes(process *exec.Cmd, expects []*Expect) (*ExpectStream, *ExpectStream, *os.File, error) {
 	// Pipe for stdin
 	stdin, inputWriter, err := os.Pipe()
 	if err != nil {
@@ -43,8 +39,8 @@ func expectPipes(process *exec.Cmd, expects []*Expect, execCmd func(index int, s
 	}
 
 	// Create stdout + stderr that catch expected strings
-	stdout := &ExpectStream{os.Stdout, inputWriter, process, expects, execCmd}
-	stderr := &ExpectStream{os.Stderr, inputWriter, process, expects, execCmd}
+	stdout := &ExpectStream{os.Stdout, inputWriter, process, expects}
+	stderr := &ExpectStream{os.Stderr, inputWriter, process, expects}
 
 	// Copy real stdin to fake stdin
 	go func() {
