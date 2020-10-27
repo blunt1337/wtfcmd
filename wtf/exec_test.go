@@ -44,11 +44,11 @@ func echo(value interface{}, t *testing.T) {
 			Bash:       "",
 			Powershell: "",
 		}
-		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}, cwd, nil}
+		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}, cwd, []*Expect{}, nil}
 		command := &Command{"command", []string{"cmd"}, config}
 		group := &Group{"group", []string{"g"}, []*Command{command}}
 
-		ExecCmd(group, command, params, false)
+		ExecCmd(group, command, params, false, nil)
 		return
 	}
 
