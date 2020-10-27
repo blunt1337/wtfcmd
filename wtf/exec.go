@@ -82,22 +82,22 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 		Panic(err.Error())
 	}
 
-	// Normal mode
-	if stdout == nil {
-		// Wait for the end
-		if err := process.Wait(); err != nil {
-			// The program has exited with an exit code != 0
-			if exiterr, ok := err.(*exec.ExitError); ok {
-				if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-					os.Exit(status.ExitStatus())
+	// Wait for the end
+	if err := process.Wait(); err != nil {
+		// The program has exited with an exit code != 0
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				status := status.ExitStatus()
+				if stdout == nil || status != 0 {
+					os.Exit(status)
 				}
-			} else {
-				Panic(err.Error())
 			}
+		} else {
+			Panic(err.Error())
 		}
+	}
+	if stdout == nil {
 		os.Exit(0)
-	} else {
-		process.Wait()
 	}
 }
 
