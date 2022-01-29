@@ -22,6 +22,7 @@ type Config struct {
 	Args        []*ArgOrFlag
 	Flags       []*ArgOrFlag
 	Cwd         *TermDependant
+	Envs        []string
 	StopOnError bool
 }
 
@@ -139,6 +140,20 @@ func parseConfig(data interface{}) (*Config, error) {
 				res.StopOnError, ok = v.(bool)
 				if !ok {
 					return nil, errors.New(".stopOnError : must be a boolean")
+				}
+			case "envs":
+				envs, ok := v.(map[string]interface{})
+				if !ok {
+					return nil, errors.New(".envs : must be an object")
+				}
+
+				// Convert to []string
+				res.Envs = []string{}
+				for key, value := range envs {
+					if strings.Contains(key, "=") {
+						return nil, fmt.Errorf(".envs[%s] : cannot have an '=' in its name", key)
+					}
+					res.Envs = append(res.Envs, fmt.Sprintf("%s=%v", key, value))
 				}
 			default:
 				return nil, fmt.Errorf(".%s : unknown property", k)

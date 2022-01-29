@@ -206,6 +206,12 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*		*/ "{{end}}\n" +
 		/*	*/ "{{end}}" +
 		"{{end}}" +
+		"{{if .Command.Config.Envs}}" +
+		/*	*/ "{{$B}}ENVIRONMENTS{{$R}}\n" +
+		/*	*/ "{{range .Command.Config.Envs}}" +
+		/*		*/ "	- {{replace . \"=\" \": \" 1}}\n" +
+		/*	*/ "{{end}}" +
+		"{{end}}" +
 		"\n\n"
 
 	// Execute template with command

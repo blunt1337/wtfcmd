@@ -64,6 +64,12 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	process.Stdin = os.Stdin
 	process.Dir = ResolveCwd(command.Config)
 
+	// Envs
+	if command.Config.Envs != nil {
+		process.Env = os.Environ()
+		process.Env = append(process.Env, command.Config.Envs...)
+	}
+
 	// Start
 	if err := process.Start(); err != nil {
 		Panic(err.Error())
@@ -258,6 +264,24 @@ func getTplFuncs(config *Config) template.FuncMap {
 		},
 		"bell": func() string {
 			return os.Args[0] + " --builtin Bell ."
+		},
+		"setEnv": func(name string, value ...interface{}) string {
+			var formattedValue interface{}
+			if len(value) == 0 {
+				formattedValue = ""
+			} else {
+				formattedValue = EscapeArg(value)
+			}
+
+			cmd := "export %s=%v"
+			switch GetTerminal() {
+			case TermCmd:
+				cmd = "setx %s %v"
+			case TermPowershell:
+				cmd = "$Env:%s=%v"
+			}
+
+			return fmt.Sprintf(cmd, name, formattedValue)
 		},
 	}
 }
