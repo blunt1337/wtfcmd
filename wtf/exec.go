@@ -265,6 +265,27 @@ func getTplFuncs(config *Config) template.FuncMap {
 		"bell": func() string {
 			return os.Args[0] + " --builtin Bell ."
 		},
+		// Terminal type commands
+		"isBash": func() bool {
+			return GetTerminal() == TermBash
+		},
+		"isCmd": func() bool {
+			return GetTerminal() == TermCmd
+		},
+		"isPowershell": func() bool {
+			return GetTerminal() == TermPowershell
+		},
+		"getTerminal": func() string {
+			switch GetTerminal() {
+			case TermBash:
+				return "bash"
+			case TermCmd:
+				return "cmd"
+			case TermPowershell:
+				return "powershell"
+			}
+			return ""
+		},
 		"setEnv": func(name string, value ...interface{}) string {
 			var formattedValue interface{}
 			if len(value) == 0 {
