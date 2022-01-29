@@ -44,7 +44,7 @@ func echo(value interface{}, t *testing.T) {
 			Bash:       "",
 			Powershell: "",
 		}
-		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}, cwd}
+		config := &Config{"/", []string{}, []string{}, cmdTpl, "", []*ArgOrFlag{}, []*ArgOrFlag{}, cwd, []string{}, false}
 		command := &Command{"command", []string{"cmd"}, config}
 		group := &Group{"group", []string{"g"}, []*Command{command}}
 
