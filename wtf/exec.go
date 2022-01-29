@@ -28,6 +28,14 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 		Panic(fmt.Sprintf("Error in %s: The template for the command %s %s cannot be compiled: %s", config.File, group.Name, command.Name, err.Error()))
 	}
 	var buffer bytes.Buffer
+	if command.Config.StopOnError {
+		switch GetTerminal() {
+		case TermBash:
+			buffer.WriteString("set -e;")
+		case TermPowershell:
+			buffer.WriteString("$ErrorActionPreference = \"Stop\";")
+		}
+	}
 	err = tmpl.Execute(&buffer, params)
 	if err != nil {
 		Panic(fmt.Sprintf("Error in %s: The template for the command %s %s failed to execute: %s", config.File, group.Name, command.Name, err.Error()))

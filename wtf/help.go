@@ -164,6 +164,9 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "	{{cwd .Command.Config}}" +
 		/*	*/ "\n\n" +
 		"{{end}}" +
+		"{{if .Command.Config.StopOnError}}" +
+		/*	*/ "{{$B}}STOP ON ERROR: yes{{$R}}\n\n" +
+		"{{end}}" +
 		"{{if .Command.Config.Args}}" +
 		/*	*/ "{{$B}}ARGUMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Args}}" +

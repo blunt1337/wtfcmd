@@ -14,14 +14,15 @@ import (
 
 // Config is the first level of the json.
 type Config struct {
-	File  string
-	Group []string
-	Name  []string
-	Cmd   *TermDependant
-	Desc  string
-	Args  []*ArgOrFlag
-	Flags []*ArgOrFlag
-	Cwd   *TermDependant
+	File        string
+	Group       []string
+	Name        []string
+	Cmd         *TermDependant
+	Desc        string
+	Args        []*ArgOrFlag
+	Flags       []*ArgOrFlag
+	Cwd         *TermDependant
+	StopOnError bool
 }
 
 // ArgOrFlag holds an arguments or flags from the config.
@@ -38,7 +39,6 @@ type ArgOrFlag struct {
 type TermDependant struct {
 	Bash       string
 	Powershell string
-	// Cmd string
 }
 
 var nameRegex = regexp.MustCompile("^[\\p{L}0-9][\\p{L}0-9:._-]*$")
@@ -134,6 +134,11 @@ func parseConfig(data interface{}) (*Config, error) {
 					res.Args = value
 				case "flags":
 					res.Flags = value
+				}
+			case "stopOnError":
+				res.StopOnError, ok = v.(bool)
+				if !ok {
+					return nil, errors.New(".stopOnError : must be a boolean")
 				}
 			default:
 				return nil, fmt.Errorf(".%s : unknown property", k)
