@@ -18,16 +18,24 @@ jobs:
       run: go run assetbuilder/build.go $(pwd)/assets
     - name: Test
       run: go test ./wtf
-    - name: Build for windows
-      run: env GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf.exe ./wtf
-    - name: Build for macos
-      run: env GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf.osx ./wtf
-    - name: Build for linux
-      run: env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf.linux ./wtf
-    - name: Build for linux-arm
-      run: env GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o ./bin/wtf.linux-arm ./wtf
+
+    - name: Build for windows amd
+      run: env GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf-amd.exe ./wtf
+    - name: Build for windows arm
+      run: env GOOS=windows GOARCH=arm64 go build -ldflags="-s -w" -o ./bin/wtf-arm.exe ./wtf
+
+    - name: Build for macos amd
+      run: env GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf-amd.osx ./wtf
+    - name: Build for macos arm
+      run: env GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o ./bin/wtf-arm.osx ./wtf
+
+    - name: Build for linux amd
+      run: env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./bin/wtf-amd.linux ./wtf
+    - name: Build for linux arm
+      run: env GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./bin/wtf-arm.linux ./wtf
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: ./bin/wtf.*
+        files: ./bin/wtf-*
