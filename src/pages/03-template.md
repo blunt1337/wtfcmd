@@ -9,8 +9,8 @@ Commands are in [golang template](https://golang.org/pkg/text/template/) code. H
 | Print a string argument escaped | `echo {{ esc .varname }}`
 | Remove spaces between template code | `"{{ 23 -}} < {{- 45 }}"` = 23<45
 | Condition with a boolean argument | `{{ if .varname }}echo "TRUE"{{end}}`
-| Condition with a string argument | `{{ if -eq .varname "yes" }}echo "TRUE"{{ end }}`
-| Multiple conditions | `{{ if and (-eq .varname1 "yes") (-eq .varname2 "no")}}echo "TRUE"{{ end }}`
+| Condition with a string argument | `{{ if eq .varname "yes" }}echo "TRUE"{{ end }}`
+| Multiple conditions | `{{ if and (eq .varname1 "yes") (eq .varname2 "no")}}echo "TRUE"{{ end }}`
 | Loops | `{{ range $index, $element := .array_variable }}{{ $element }}{{ else }}Empty array{{ end }}`
 | Use functions | `{{ replace "foobar" "foo" "bar" -1 }}` = barbar
 | Use utilities functions | `{{ info "My name is" .name }}`
