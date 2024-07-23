@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/titanous/json5"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Config is the first level of the json.
