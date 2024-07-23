@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Config is the first level of the json.
@@ -42,8 +43,8 @@ type TermDependant struct {
 	Powershell string
 }
 
-var nameRegex = regexp.MustCompile("^[\\p{L}0-9][\\p{L}0-9:._-]*$")
-var aliasRegex = regexp.MustCompile("^[\\p{L}0-9]$")
+var nameRegex = regexp.MustCompile(`^[\p{L}0-9][\p{L}0-9:._-]*$`)
+var aliasRegex = regexp.MustCompile(`^[\p{L}]$`)
 
 // ParseConfigs parses the JSON configuration to structs.
 // Checks some fields too.
@@ -81,6 +82,8 @@ func ParseConfigs(input io.Reader, cfgs []*Config, file string, format string) (
 				return nil, fmt.Errorf("[%d]%s", i, err.Error())
 			}
 
+			//TODO: Unique group-name
+
 			cfg.File = file
 			cfgs = append(cfgs, cfg)
 		}
@@ -97,14 +100,15 @@ func parseConfig(data interface{}) (*Config, error) {
 
 		// Foreach key => value
 		for k, v := range hash {
-			switch k {
+			kl := strings.ToLower(k)
+			switch kl {
 			case "group", "name", "desc":
 				value, err := parseStringArray(v)
 				if err != nil {
 					return nil, fmt.Errorf(".%s%s", k, err.Error())
 				}
 
-				switch k {
+				switch kl {
 				case "group":
 					res.Group = filterArray(value)
 				case "name":
@@ -125,18 +129,18 @@ func parseConfig(data interface{}) (*Config, error) {
 				}
 				res.Cwd = value
 			case "args", "flags":
-				value, err := parseArgOrFlagArray(v, k == "args")
+				value, err := parseArgOrFlagArray(v, kl == "args")
 				if err != nil {
 					return nil, fmt.Errorf(".%s%s", k, err.Error())
 				}
 
-				switch k {
+				switch kl {
 				case "args":
 					res.Args = value
 				case "flags":
 					res.Flags = value
 				}
-			case "stopOnError":
+			case "stoponerror", "stop_on_error":
 				res.StopOnError, ok = v.(bool)
 				if !ok {
 					return nil, errors.New(".stopOnError : must be a boolean")
@@ -151,7 +155,7 @@ func parseConfig(data interface{}) (*Config, error) {
 				res.Envs = []string{}
 				for key, value := range envs {
 					if strings.Contains(key, "=") {
-						return nil, fmt.Errorf(".envs[%s] : cannot have an '=' in its name", key)
+						return nil, fmt.Errorf(".envs[%s] : cannot have '=' in its name", key)
 					}
 					res.Envs = append(res.Envs, fmt.Sprintf("%s=%v", key, value))
 				}
@@ -188,22 +192,22 @@ func parseConfig(data interface{}) (*Config, error) {
 
 		// Not 2 args/flags with the same name
 		if name, ok := areNamesUnique(res.Args, res.Flags); !ok {
-			return nil, fmt.Errorf(".args/flags : the name %s is used more than once", name)
+			return nil, fmt.Errorf(".args/flags : name '%s' used more than once", name)
 		}
 
 		// Not an arg required = false before a required = true
 		if name, ok := checkArgOrder(res.Args); !ok {
-			return nil, fmt.Errorf(".args : the argument %s cannot be required after an optionnal one", name)
+			return nil, fmt.Errorf(".args : argument '%s' cannot be required after an optionnal one", name)
 		}
 
 		// Only the last argument can be an array
 		if name, ok := checkArgIsArray(res.Args); !ok {
-			return nil, fmt.Errorf(".args : the argument %s cannot be an array, only last argument can", name)
+			return nil, fmt.Errorf(".args : argument '%s' cannot be an array, only last argument can", name)
 		}
 
 		return res, nil
 	}
-	return nil, errors.New(" : the configuration must be an object")
+	return nil, errors.New(" : configuration must be an object")
 }
 
 // parseStringArray checks and returns a string array from a string or string array.
@@ -234,7 +238,8 @@ func parseTermDependant(data interface{}, jointer string) (*TermDependant, error
 	// Map
 	if obj, ok := data.(map[string]interface{}); ok {
 		for k, subdata := range obj {
-			switch k {
+			kl := strings.ToLower(k)
+			switch kl {
 			case "bash" /*"cmd",*/, "powershell":
 				// String/array
 				value, err := parseStringArray(subdata)
@@ -242,7 +247,7 @@ func parseTermDependant(data interface{}, jointer string) (*TermDependant, error
 					return nil, fmt.Errorf("[%s]%s", k, err.Error())
 				}
 
-				switch k {
+				switch kl {
 				case "bash":
 					res.Bash = strings.TrimSpace(strings.Join(value, jointer))
 				case "powershell":
@@ -298,7 +303,7 @@ func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 
 		// Foreach key => value
 		for k, v := range data {
-			switch k {
+			switch strings.ToLower(k) {
 			case "name", "desc":
 				value, err := parseStringArray(v)
 				if err != nil {
@@ -311,14 +316,15 @@ func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 				case "desc":
 					res.Desc = strings.Join(value, "\n")
 				}
-			case "required", "is_array", "array":
+			case "required":
 				if subvalue, ok := v.(bool); ok {
-					switch k {
-					case "required":
-						res.Required = subvalue
-					case "is_array", "array":
-						res.IsArray = subvalue
-					}
+					res.Required = subvalue
+				} else {
+					return nil, fmt.Errorf(".%s : must be a boolean", k)
+				}
+			case "is_array", "isarray", "array":
+				if subvalue, ok := v.(bool); ok {
+					res.IsArray = subvalue
 				} else {
 					return nil, fmt.Errorf(".%s : must be a boolean", k)
 				}
@@ -348,7 +354,7 @@ func parseArgOrFlag(jsonInterface interface{}, isArg bool) (*ArgOrFlag, error) {
 		// Alphanum alias
 		for i := 1; i < l; i++ {
 			if !aliasRegex.MatchString(res.Name[i]) {
-				return nil, errors.New(".name : aliases are 1 character alphanumeric")
+				return nil, errors.New(".name : aliases are 1 character letters")
 			}
 		}
 
@@ -462,7 +468,7 @@ func areNamesUnique(args []*ArgOrFlag, flags []*ArgOrFlag) (string, bool) {
 			if _, ok := encountered[name]; ok {
 				return name, false
 			}
-			encountered[name] = true
+			encountered[strings.ToLower(name)] = true
 		}
 	}
 	for _, flag := range flags {
@@ -470,7 +476,7 @@ func areNamesUnique(args []*ArgOrFlag, flags []*ArgOrFlag) (string, bool) {
 			if _, ok := encountered[name]; ok {
 				return name, false
 			}
-			encountered[name] = true
+			encountered[strings.ToLower(name)] = true
 		}
 	}
 
