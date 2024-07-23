@@ -16,26 +16,22 @@ func findConfigFiles() []string {
 		return res
 	}
 
+	maxDepth := 10
 	for {
-		// Check if a .wtfcmd.json exists
-		path := dir + "/.wtfcmd.json"
-		if _, err := os.Stat(path); err == nil {
-			res = append(res, path)
-		}
-
-		// Check if a .wtfcmd.yaml exists
-		path = dir + "/.wtfcmd.yaml"
-		if _, err := os.Stat(path); err == nil {
-			res = append(res, path)
-		}
-
-		// Check if a .wtfcmd.yml exists
-		path = dir + "/.wtfcmd.yml"
-		if _, err := os.Stat(path); err == nil {
-			res = append(res, path)
+		// Check for all extensions
+		exts := []string{"json", "jsonc", "json5", "yaml", "yml"}
+		for _, ext := range exts {
+			path := dir + "/.wtfcmd." + ext
+			if _, err := os.Stat(path); err == nil {
+				res = append(res, path)
+			}
 		}
 
 		// Parent dir
+		maxDepth--
+		if maxDepth == 0 {
+			break
+		}
 		olddir := dir
 		dir = filepath.Dir(dir)
 		if olddir == dir {

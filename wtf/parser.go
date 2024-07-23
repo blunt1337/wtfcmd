@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/titanous/json5"
 	"gopkg.in/yaml.v2"
 )
 
@@ -53,9 +54,9 @@ func ParseConfigs(input io.Reader, cfgs []*Config, file string, format string) (
 	var data interface{}
 
 	switch format {
-	case "json":
+	case "json", "json5", "jsonc":
 		// Parse the json
-		dec := json.NewDecoder(input)
+		dec := json5.NewDecoder(input)
 		if err := dec.Decode(&data); err != nil {
 			return nil, err
 		}
