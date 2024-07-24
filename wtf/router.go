@@ -85,9 +85,9 @@ func findGroupAndCommand(groups []*Group, args []string) (*Group, *Command) {
 	}
 
 	// Find the group
-	first := args[0]
+	first := strings.ToLower(args[0])
 	for _, group := range groups {
-		if group.Name == first || inArray(first, group.Aliases) {
+		if strings.ToLower(group.Name) == first || inArray(first, group.Aliases) {
 			if len(args) < 2 {
 				return group, nil
 			}
@@ -104,8 +104,9 @@ func findGroupAndCommand(groups []*Group, args []string) (*Group, *Command) {
 
 // findCommand finds for the command by name.
 func findCommand(group *Group, name string) *Command {
+	name = strings.ToLower(name)
 	for _, command := range group.Commands {
-		if command.Name == name || inArray(name, command.Aliases) {
+		if strings.ToLower(command.Name) == name || inArray(name, command.Aliases) {
 			return command
 		}
 	}
@@ -367,13 +368,14 @@ func checkValue(value string, test string) (interface{}, error) {
 	}
 }
 
-// in_array returns true if needle is in the stack.
+// inArray returns true if needle is in the stack.
 func inArray(needle string, stack []string) bool {
+	needle = strings.ToLower(needle)
 	if stack == nil {
 		return false
 	}
 	for _, value := range stack {
-		if value == needle {
+		if strings.ToLower(value) == needle {
 			return true
 		}
 	}

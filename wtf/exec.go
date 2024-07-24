@@ -8,10 +8,13 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall"
 	"text/template"
 )
+
+var varNameRegex = regexp.MustCompile(`[:._-]+`)
 
 // ExecCmd run the command as a child process.
 // Use command.Cmd template and params to build the command.
@@ -19,16 +22,22 @@ import (
 func ExecCmd(group *Group, command *Command, params map[string]interface{}, debug bool) {
 	config := command.Config
 
+	// Make param names valid
+	paramsSafe := make(map[string]interface{})
+	for k, v := range params {
+		paramsSafe[varNameRegex.ReplaceAllString(k, "_")] = v
+	}
+
 	// Get the right command
 	cmdWrapper, cmdTpl := GetLangAndCommandTemplate(config.Cmd)
 
 	// Generate the command from the template
-	tmpl, err := template.New("cmd").Funcs(getTplFuncs(command.Config)).Parse(cmdTpl)
+	tmpl, err := template.New("cmd").Funcs(getTplFuncs(config)).Parse(cmdTpl)
 	if err != nil {
 		Panic(fmt.Sprintf("Error in %s: The template for the command %s %s cannot be compiled: %s", config.File, group.Name, command.Name, err.Error()))
 	}
 	var buffer bytes.Buffer
-	if command.Config.StopOnError {
+	if config.StopOnError {
 		switch GetTerminal() {
 		case TermBash:
 			buffer.WriteString("set -e;")
@@ -36,7 +45,7 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 			buffer.WriteString("$ErrorActionPreference = \"Stop\";")
 		}
 	}
-	err = tmpl.Execute(&buffer, params)
+	err = tmpl.Execute(&buffer, paramsSafe)
 	if err != nil {
 		Panic(fmt.Sprintf("Error in %s: The template for the command %s %s failed to execute: %s", config.File, group.Name, command.Name, err.Error()))
 	}
@@ -62,12 +71,12 @@ func ExecCmd(group *Group, command *Command, params map[string]interface{}, debu
 	process.Stdout = os.Stdout
 	process.Stderr = os.Stderr
 	process.Stdin = os.Stdin
-	process.Dir = ResolveCwd(command.Config)
+	process.Dir = ResolveCwd(config)
 
 	// Envs
-	if command.Config.Envs != nil {
+	if config.Envs != nil {
 		process.Env = os.Environ()
-		process.Env = append(process.Env, command.Config.Envs...)
+		process.Env = append(process.Env, config.Envs...)
 	}
 
 	// Start
