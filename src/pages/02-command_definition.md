@@ -1,9 +1,9 @@
 # Command's definition
 ---
 
-Configuration files are stored in `.wtfcmd.json`, `.wtfcmd.yaml` or `.wtfcmd.yml` files. They are loaded from each directory and parent directories from the current working dir.
+Configuration files can be stored in `.wtfcmd.json5`, `.wtfcmd.json`, `.wtfcmd.yaml` or `.wtfcmd.yml` files. They are loaded from each directory and parent directories from the current working dir.
 
-For example, if you run `wtf` in `/Users/blunt/projects`, it will try to load from `/Users/blunt/projects/.wtfcmd.ext` and `/Users/blunt/.wtfcmd.ext`, and `/Users/.wtfcmd.ext` and `/.wtfcmd.ext`.
+For example, if you run `wtf` in `/Users/blunt/projects`, it will try to load from `/Users/blunt/projects/.wtfcmd.{json5,json,yaml,yml}` and `/Users/blunt/.wtfcmd.{json5,json,yaml,yml}`, and `/Users/.wtfcmd.{json5,json,yaml,yml}` and `/.wtfcmd.{json5,json,yaml,yml}`.
 
 A configuration can override a command from a parent configuration if they share the same group and name.
 

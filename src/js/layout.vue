@@ -19,6 +19,8 @@
 		</div>
 		<div class="content">
 			<div class="container-fluid">
+				<banner v-if="$route.name === 'home'" />
+
 				<!-- Menu -->
 				<menu-top @sidebar="sidebar = true"/>
 				
@@ -37,6 +39,7 @@
 <script>
 import MenuTop from './components/menu-top'
 import MenuSide from './components/menu-side'
+import Banner from '@/assets/banner'
 
 export default {
 	data: () => ({
@@ -46,6 +49,7 @@ export default {
 		project_description: process.env.PROJECT_DESCRIPTION
 	}),
 	components: {
+		Banner,
 		MenuTop,
 		MenuSide,
 	},

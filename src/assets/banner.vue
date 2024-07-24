@@ -5,7 +5,6 @@
 			<div class="triangle"></div>
 		</div>
 		<h1 menu-ignore>super alias your commands<br />in seconds.</h1>
-		<a href="#getting-started" class="btn btn-outline-dark">Get started</a>
 	</div>
 </template>
 
@@ -14,7 +13,7 @@
 
 .banner {
 	width: 100%;
-	height: 300px;
+	height: 250px;
 	overflow: hidden;
 	position: relative;
 	background: mix($primary, #FFF, 3%);

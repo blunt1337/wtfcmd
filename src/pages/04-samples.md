@@ -1,43 +1,6 @@
 # Samples
 ---
-
-## For Laravel projects
-```yaml
-# Misc
-- name: init
-  desc: Initialise the project
-  cmd: npm install; composer install
-  cwd: .
-
-# Frontend
-- group: [frontend, front, f]
-  name: [watch, w]
-  cmd: npm run watch
-  desc: Recompile js/css/html files on source change
-
-- group: frontend
-  name: [compile, c]
-  cmd: npm run production
-  desc: Recompile js/css/html files for production
-
-# Database
-- group: db
-  name: update
-  cmd: php /app/artisan migrate --force
-  desc: Run updates on the database
-
-- group: db
-  name: rollback
-  cmd: php /app/artisan migrate:rollback
-  desc: Remove last database updates
-
-- group: db
-  name: seed
-  cmd: php /app/artisan db:seed
-  desc: Add test records in the database
-```
-
-## For docker-compose projects, named myproject
+## Projects with Docker
 ```yaml
 - group: [docker, dkr]
   name: [start, s]

@@ -43,6 +43,7 @@ export default {
 	margin-bottom: 0;
 	z-index: 1000;
 	background: $body-bg;
+	font-weight: bold;
 		
 	@include media-breakpoint-up(md) {
 		padding-top: 2em;
