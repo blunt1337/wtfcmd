@@ -255,7 +255,7 @@ func parseParams(group *Group, command *Command, args []string) map[string]inter
 func parseFlag(group *Group, command *Command, name string, value string, hasValue string) (string, interface{}, bool, bool) {
 	// Find the flag
 	for _, flag := range command.Config.Flags {
-		if inArray(name, flag.Name) {
+		if exactInArray(name, flag.Name) {
 			// Flag found
 			nextValueUsed := false
 
@@ -368,7 +368,7 @@ func checkValue(value string, test string) (interface{}, error) {
 	}
 }
 
-// inArray returns true if needle is in the stack.
+// inArray returns true if needle is in the stack, not case sensitive.
 func inArray(needle string, stack []string) bool {
 	needle = strings.ToLower(needle)
 	if stack == nil {
@@ -376,6 +376,19 @@ func inArray(needle string, stack []string) bool {
 	}
 	for _, value := range stack {
 		if strings.ToLower(value) == needle {
+			return true
+		}
+	}
+	return false
+}
+
+// inArray returns true if needle is in the stack, with case sensitive.
+func exactInArray(needle string, stack []string) bool {
+	if stack == nil {
+		return false
+	}
+	for _, value := range stack {
+		if value == needle {
 			return true
 		}
 	}
