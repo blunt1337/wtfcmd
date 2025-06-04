@@ -23,6 +23,20 @@ func GetTerminal() TermType {
 		// Default
 		term = TermCmd
 
+		// Powershell windows 10/11 with wmic deprecated
+		if _, ok := os.LookupEnv("PSModulePath"); ok {
+			term = TermPowershell
+
+			// Enable colors
+			fd := os.Stdout.Fd()
+			var mode uint32
+			if err := syscall.GetConsoleMode(syscall.Handle(fd), &mode); err == nil {
+				mode |= 0x0004 // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+				syscall.NewLazyDLL("kernel32.dll").NewProc("SetConsoleMode").Call(fd, uintptr(mode), 0)
+			}
+			return term
+		}
+
 		// Parent pid
 		ppid := os.Getppid()
 
