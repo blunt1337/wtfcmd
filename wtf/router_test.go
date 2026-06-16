@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func ExampleRouter1() {
+func Example_router1() {
 	// Sample config
 	group := &Group{}
 	command := &Command{
