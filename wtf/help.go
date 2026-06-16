@@ -20,13 +20,21 @@ var red = ""
 // Orange character code.
 var orange = ""
 
-// Fill bold/reset/red if the terminal can handle colors.
+// Green character code.
+var green = ""
+
+// Cyan character code.
+var cyan = ""
+
+// Fill color codes if stdout is an ANSI-capable terminal.
 func init() {
-	if os.Getenv("TERM") != "dumb" && GetTerminal() != TermCmd {
+	if !noColor {
 		bold = "\033[01m"
 		reset = "\033[00m"
 		red = "\033[91m"
 		orange = "\033[33m"
+		green = "\033[32m"
+		cyan = "\033[36m"
 	}
 }
 
@@ -34,6 +42,9 @@ func init() {
 type GroupWrapper struct {
 	Bold   string
 	Reset  string
+	Orange string
+	Green  string
+	Cyan   string
 	Groups map[string]*Group
 }
 
@@ -41,6 +52,9 @@ type GroupWrapper struct {
 type CommandWrapper struct {
 	Bold    string
 	Reset   string
+	Orange  string
+	Green   string
+	Cyan    string
 	Command *Command
 	Group   *Group
 }
@@ -60,13 +74,13 @@ func (me SortByName) Less(i int, j int) bool {
 
 // ShowHelp shows a help page with a list of all commands.
 func ShowHelp(groups []*Group, std *os.File) {
-	tplTxt := "{{$B := .Bold}}{{$R := .Reset}}" +
+	tplTxt := "{{$B := .Bold}}{{$R := .Reset}}{{$O := .Orange}}{{$G := .Green}}{{$C := .Cyan}}" +
 		"\n" +
-		"{{$B}}AVAILABLE COMMANDS{{$R}}\n" +
+		"{{$O}}{{$B}}AVAILABLE COMMANDS{{$R}}\n" +
 		"\n" +
 		"{{range .Groups}}" +
 		/*	*/ "{{if .Name}}" +
-		/*		*/ "{{$B}}{{.Name}}{{$R}}" +
+		/*		*/ "{{$O}}{{$B}}{{.Name}}{{$R}}" +
 		/*		*/ "{{if .Aliases}}" +
 		/*			*/ " ({{join .Aliases \", \"}})" +
 		/*		*/ "{{end}}" +
@@ -75,7 +89,7 @@ func ShowHelp(groups []*Group, std *os.File) {
 		/*	*/ "{{range .Commands}}" +
 		/*		*/ " - " +
 		/*		*/ "{{if .Config.Group}}{{index .Config.Group 0}} {{end}}" +
-		/*		*/ "{{$B}}{{.Name}}{{$R}}" +
+		/*		*/ "{{$G}}{{$B}}{{.Name}}{{$R}}" +
 		/*		*/ "{{if .Aliases}}" +
 		/*			*/ " ({{join .Aliases \", \"}})" +
 		/*		*/ "{{end}}" +
@@ -112,6 +126,9 @@ func ShowHelp(groups []*Group, std *os.File) {
 		Groups: groupByName,
 		Bold:   bold,
 		Reset:  reset,
+		Orange: orange,
+		Green:  green,
+		Cyan:   cyan,
 	})
 	if err != nil {
 		Panic(err)
@@ -132,45 +149,45 @@ func getDefaultValueTemplate() string {
 
 // getUsageTemplate returns the template string for command usage.
 func getUsageTemplate() string {
-	return "{{if .Group.Name}}{{.Group.Name}} {{end}}{{.Command.Name}}" +
+	return "{{if .Group.Name}}{{.Group.Name}} {{end}}{{$G}}{{$B}}{{.Command.Name}}{{$R}}" +
 		"{{if .Command.Config.Flags}} [flags]{{end}}" +
 		"{{range .Command.Config.Args}}" +
-		/*	*/ " {{if .Required}}<{{index .Name 0}}>{{if .IsArray}}...{{end}}" +
-		/*	*/ "{{else}}[{{index .Name 0}}=" + getDefaultValueTemplate() + "]{{if .IsArray}}...{{end}}" +
+		/*	*/ " {{if .Required}}<{{$G}}{{index .Name 0}}{{$R}}>{{if .IsArray}}...{{end}}" +
+		/*	*/ "{{else}}[{{$G}}{{index .Name 0}}{{$R}}=" + getDefaultValueTemplate() + "]{{if .IsArray}}...{{end}}" +
 		/*	*/ "{{end}}" +
 		"{{end}}"
 }
 
 // ShowHelpCommand shows detailed help for a command.
 func ShowHelpCommand(group *Group, command *Command) {
-	tplTxt := "{{$B := .Bold}}{{$R := .Reset}}" +
+	tplTxt := "{{$B := .Bold}}{{$R := .Reset}}{{$O := .Orange}}{{$G := .Green}}{{$C := .Cyan}}" +
 		"\n" +
-		"{{$B}}SYNOPSIS{{$R}}\n" +
+		"{{$O}}{{$B}}SYNOPSIS{{$R}}\n" +
 		"	" + getUsageTemplate() + "{{availability .Command.Config.Cmd}}" +
 		"\n\n" +
 		"{{if or .Group.Aliases .Command.Aliases}}" +
-		/*	*/ "{{$B}}ALIASES{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}ALIASES{{$R}}\n" +
 		/*	*/ "	{{if .Group.Name}}{{.Group.Name}}{{if .Group.Aliases}}|{{join .Group.Aliases \"|\"}}{{end}} {{end}}" +
 		/*	*/ "{{.Command.Name}}{{if .Command.Aliases}}|{{join .Command.Aliases \"|\"}}{{end}}" +
 		/*	*/ "\n\n" +
 		"{{end}}" +
 		"{{if .Command.Config.Desc}}" +
-		/*	*/ "{{$B}}DESCRIPTION{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}DESCRIPTION{{$R}}\n" +
 		/*	*/ "	{{replace .Command.Config.Desc \"\\n\" \"\\n	\" -1}}" +
 		/*	*/ "\n\n" +
 		"{{end}}" +
 		"{{if .Command.Config.Cwd}}" +
-		/*	*/ "{{$B}}WORKING DIRECTORY{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}WORKING DIRECTORY{{$R}}\n" +
 		/*	*/ "	{{cwd .Command.Config}}" +
 		/*	*/ "\n\n" +
 		"{{end}}" +
 		"{{if .Command.Config.StopOnError}}" +
-		/*	*/ "{{$B}}STOP ON ERROR: yes{{$R}}\n\n" +
+		/*	*/ "{{$O}}{{$B}}STOP ON ERROR:{{$R}} yes\n\n" +
 		"{{end}}" +
 		"{{if .Command.Config.Args}}" +
-		/*	*/ "{{$B}}ARGUMENTS{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}ARGUMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Args}}" +
-		/*		*/ "	{{$B}}{{index .Name 0}}{{$R}} (" +
+		/*		*/ "	{{$G}}{{$B}}{{index .Name 0}}{{$R}} ({{$C}}" +
 		/*		*/ "{{if .IsArray}}array of {{end}}" +
 		/*		*/ "{{if .Test}}" +
 		/*			*/ "{{if hasPrefix .Test \"$\"}}" +
@@ -179,7 +196,7 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
 		/*			*/ "{{end}}" +
 		/*		*/ "{{else}}string{{end}}" +
-		/*		*/ ", {{if .Required}}required{{else}}default " + getDefaultValueTemplate() + "{{end}}" +
+		/*		*/ "{{$R}}, {{if .Required}}required{{else}}default " + getDefaultValueTemplate() + "{{end}}" +
 		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
@@ -187,10 +204,10 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "{{end}}" +
 		"{{end}}" +
 		"{{if .Command.Config.Flags}}" +
-		/*	*/ "{{$B}}FLAGS{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}FLAGS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Flags}}" +
-		/*		*/ "	{{$B}}--{{index .Name 0}}{{$R}}" +
-		/*		*/ "{{$l := len .Name}}{{if gt $l 1}}{{range $index, $Name := .Name}}{{if ne $index 0}}, -{{$Name}}{{end}}{{end}}{{end}} (" +
+		/*		*/ "	{{$G}}{{$B}}--{{index .Name 0}}{{$R}}" +
+		/*		*/ "{{$l := len .Name}}{{if gt $l 1}}{{range $index, $Name := .Name}}{{if ne $index 0}}, {{$G}}-{{$Name}}{{$R}}{{end}}{{end}}{{end}} ({{$C}}" +
 		/*		*/ "{{if .IsArray}}array of {{end}}" +
 		/*		*/ "{{if .Test}}" +
 		/*			*/ "{{if hasPrefix .Test \"$\"}}" +
@@ -199,7 +216,7 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*				*/ "/{{replace .Test \"/\" \"\\\\/\" -1}}/" +
 		/*			*/ "{{end}}" +
 		/*		*/ "{{else}}string{{end}}" +
-		/*		*/ ", default " + getDefaultValueTemplate() +
+		/*		*/ "{{$R}}, default " + getDefaultValueTemplate() +
 		/*		*/ ")\n\n" +
 		/*		*/ "{{if .Desc}}" +
 		/*			*/ "	{{replace .Desc \"\\n\" \"\\n	\" -1}}\n" +
@@ -207,9 +224,9 @@ func ShowHelpCommand(group *Group, command *Command) {
 		/*	*/ "{{end}}" +
 		"{{end}}" +
 		"{{if .Command.Config.Envs}}" +
-		/*	*/ "{{$B}}ENVIRONMENTS{{$R}}\n" +
+		/*	*/ "{{$O}}{{$B}}ENVIRONMENTS{{$R}}\n" +
 		/*	*/ "{{range .Command.Config.Envs}}" +
-		/*		*/ "	- {{replace . \"=\" \": \" 1}}\n" +
+		/*		*/ "	- {{$G}}{{replace . \"=\" (printf \"%s: \" $R) 1}}\n" +
 		/*	*/ "{{end}}" +
 		"{{end}}" +
 		"\n\n"
@@ -239,6 +256,9 @@ func ShowHelpCommand(group *Group, command *Command) {
 		Group:   group,
 		Bold:    bold,
 		Reset:   reset,
+		Orange:  orange,
+		Green:   green,
+		Cyan:    cyan,
 	})
 	if err != nil {
 		Panic(err)
@@ -256,7 +276,8 @@ func ShowCommandError(msg string, group *Group, command *Command, groups []*Grou
 	if group != nil {
 		if command != nil {
 			// Usage of group command
-			tplTxt := "Usage: " + getUsageTemplate() + "\n" +
+			tplTxt := "{{$B := .Bold}}{{$R := .Reset}}{{$O := .Orange}}{{$G := .Green}}{{$C := .Cyan}}" +
+				"Usage: " + getUsageTemplate() + "\n" +
 				"{{if .Command.Config.Desc}}" +
 				/*	*/ "Description: {{replace .Command.Config.Desc \"\\n\" \"\\n	\" -1}}\n" +
 				"{{end}}" +
@@ -273,6 +294,9 @@ func ShowCommandError(msg string, group *Group, command *Command, groups []*Grou
 				Group:   group,
 				Bold:    bold,
 				Reset:   reset,
+				Orange:  orange,
+				Green:   green,
+				Cyan:    cyan,
 			})
 			if err != nil {
 				Panic(err)

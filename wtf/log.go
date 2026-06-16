@@ -13,15 +13,8 @@ import (
 	"time"
 )
 
-// noColor means that the terminal doesn't handle color codes
-var noColor = false
-
 // loadingStep is a static state of the loadbar loader
 var loadingStep = 0
-
-func init() {
-	noColor = os.Getenv("TERM") == "dumb" || GetTerminal() == TermCmd
-}
 
 // Error prints an error.
 func Error(msg ...interface{}) {

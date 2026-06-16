@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/term"
 	"os"
 	"runtime"
 	"strconv"
@@ -20,6 +21,15 @@ const (
 	// TermBash is a bash terminal
 	TermBash
 )
+
+// noColor means that the terminal doesn't handle color codes
+var noColor = false
+
+func init() {
+	t := os.Getenv("TERM")
+	_, noColorEnv := os.LookupEnv("NO_COLOR")
+	noColor = !(t != "" && t != "dumb" && !noColorEnv && GetTerminal() != TermCmd && term.IsTerminal(int(os.Stdout.Fd())))
+}
 
 // GetLangAndCommandTemplate returns the language and the command template for this terminal.
 func GetLangAndCommandTemplate(cmd *TermDependant) ([]string, string) {
