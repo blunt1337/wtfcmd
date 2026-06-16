@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/term"
+	xterm "golang.org/x/term"
 	"os"
 	"runtime"
 	"strconv"
@@ -28,7 +28,7 @@ var noColor = false
 func init() {
 	t := os.Getenv("TERM")
 	_, noColorEnv := os.LookupEnv("NO_COLOR")
-	noColor = !(t != "" && t != "dumb" && !noColorEnv && GetTerminal() != TermCmd && term.IsTerminal(int(os.Stdout.Fd())))
+	noColor = !(t != "" && t != "dumb" && !noColorEnv && GetTerminal() != TermCmd && xterm.IsTerminal(int(os.Stdout.Fd())))
 }
 
 // GetLangAndCommandTemplate returns the language and the command template for this terminal.
